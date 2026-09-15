@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="bsi_page_contact" name="Salon Theme: Contact">
+        <t t-call="bsi_salon_theme.bsi_layout">
+
+            <!-- Hero -->
+            <section class="bsi-container bsi-page-hero bsi-section--bordered-bottom bsi-reveal">
+                <p class="bsi-eyebrow">Get in Touch</p>
+                <h1 class="bsi-h1">Let's talk<br/><em>transformation.</em></h1>
+            </section>
+
+            
+            <div class="bsi-container bsi-section bsi-contact-layout">
+                <!-- Form -->
+                <div class="bsi-reveal">
+                    <div t-if="submitted" class="bsi-contact-success">
+                        <div class="bsi-contact-success__mark">✦</div>
+                        <h2 class="bsi-h3">We'll be in touch.</h2>
+                        <p class="bsi-muted">Thank you, <t t-esc="submitted_name"/>. Expect a confirmation within 24 hours.</p>
+                        <a href="/salon/contact" class="bsi-btn bsi-btn--accent bsi-magnetic">Send Another</a>
+                    </div>
+                    <form t-else="" action="/salon/contact/submit" method="post" class="bsi-form">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <h2 class="bsi-h3">Send us a message</h2>
+
+                        <div class="bsi-form__row">
+                            <div class="bsi-form__field">
+                                <label>Full Name *</label>
+                                <input type="text" name="name" required="required" placeholder="Your name"/>
+                            </div>
+                            <div class="bsi-form__field">
+                                <label>Email *</label>
+                                <input type="email" name="email" required="required" placeholder="you@email.com"/>
+                            </div>
+                        </div>
+
+                        <div class="bsi-form__row">
+                            <div class="bsi-form__field">
+                                <label>Phone</label>
+                                <input type="tel" name="phone" placeholder="+91 90000 00000"/>
+                            </div>
+                            <div class="bsi-form__field">
+                                <label>Preferred Location</label>
+                                <select name="location">
+                                    <option value="">Select a salon</option>
+                                    <option t-foreach="locations" t-as="loc" t-att-value="loc.name" t-esc="loc.name"/>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="bsi-form__field">
+                            <label>How can we help?</label>
+                            <textarea name="notes" rows="4" placeholder="Tell us what you need…"/>
+                        </div>
+
+                        <button type="submit" class="bsi-btn bsi-btn--accent bsi-btn--block bsi-magnetic">Send Message</button>
+                        <p class="bsi-form__hint">For appointments, use <a href="/salon/booking" class="bsi-accent-text">Book Now</a> instead — it's faster.</p>
+                    </form>
+                </div>
+
+                <!-- Sidebar: the promo leads, since it's the one card most
+                     visitors here actually act on — then contact details,
+                     locations and social as supporting reference. -->
+                <div class="bsi-contact-sidebar bsi-reveal">
+                    <div class="bsi-promo-card bsi-spotlight">
+                        <div class="bsi-promo-card__eyebrow">New Client Offer</div>
+                        <div class="bsi-promo-card__title">20% off your first visit.</div>
+                        <div class="bsi-promo-card__code">Use code <strong>WELCOME20</strong> when booking.</div>
+                    </div>
+
+                    <div class="bsi-card bsi-sidebar-card">
+                        <h3 class="bsi-eyebrow">Toll-Free</h3>
+                        <div class="bsi-sidebar-card__row">
+                            <a href="tel:18002665300" class="bsi-accent-text">1800-266-5300</a>
+                        </div>
+                        <div class="bsi-sidebar-card__row">
+                            <div class="bsi-sidebar-card__label">Email</div>
+                            <a href="mailto:care@enrichbeauty.com" class="bsi-accent-text">care@enrichbeauty.com</a>
+                        </div>
+                    </div>
+
+                    <div class="bsi-card bsi-sidebar-card">
+                        <h3 class="bsi-eyebrow">Locations</h3>
+                        <div t-foreach="locations" t-as="loc" class="bsi-hours-row">
+                            <span t-esc="loc.name"/><span t-esc="loc.bsi_city"/>
+                        </div>
+                    </div>
+
+                    <div class="bsi-card bsi-sidebar-card">
+                        <h3 class="bsi-eyebrow">Follow Us</h3>
+                        <div class="bsi-social-row"><span class="bsi-accent-text">◈</span><div><div>Instagram</div><div class="bsi-muted-sm">@enrichbeautyin</div></div></div>
+                        <div class="bsi-social-row"><span class="bsi-accent-text">◇</span><div><div>Facebook</div><div class="bsi-muted-sm">enrichbeautyin</div></div></div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

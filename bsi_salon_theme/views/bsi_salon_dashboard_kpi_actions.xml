@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══ Dashboard KPI card click-through actions ═══
+         One per KPI card on the Salon Dashboard's top row. Rather than a hard-coded base
+         `domain` (which filters silently, with no visible/removable trace in the search
+         bar), each of these instead activates a real, named filter from the model's own
+         search view via search_default_<name> in its context — see the "Today"/"Completed
+         Today" filters added to bsi.salon.booking.request's own search view in
+         bsi_salon_booking_request_views.xml, and the account.move/res.partner filters added
+         in bsi_salon_dashboard_kpi_search_views.xml. That shows up as a real chip (e.g.
+         "Today ×") the user can see is applied — and remove, if they want the full list —
+         while still matching exactly the figure computed for it in
+         controllers/dashboard.py's bsi_salon_dashboard_stats. -->
+
+    <record id="bsi_salon_dashboard_kpi_revenue_action" model="ir.actions.act_window">
+        <field name="name">Today's Revenue</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_bsi_filter_salon_revenue_today': 1}</field>
+    </record>
+
+    <record id="bsi_salon_dashboard_kpi_appointments_action" model="ir.actions.act_window">
+        <field name="name">Today's Bookings</field>
+        <field name="res_model">bsi.salon.booking.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_bsi_filter_today': 1}</field>
+    </record>
+
+    <record id="bsi_salon_dashboard_kpi_new_customers_action" model="ir.actions.act_window">
+        <field name="name">New Customers</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_bsi_filter_new_customers_today': 1}</field>
+    </record>
+
+    <record id="bsi_salon_dashboard_kpi_available_staff_action" model="ir.actions.act_window">
+        <field name="name">Available Staff</field>
+        <field name="res_model">bsi.salon.team.member</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_bsi_filter_available_now': 1}</field>
+    </record>
+
+    <record id="bsi_salon_dashboard_kpi_pending_payments_action" model="ir.actions.act_window">
+        <field name="name">Pending Payments</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_bsi_filter_salon_pending': 1}</field>
+    </record>
+
+    <record id="bsi_salon_dashboard_kpi_completed_services_action" model="ir.actions.act_window">
+        <field name="name">Completed Services</field>
+        <field name="res_model">bsi.salon.booking.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_bsi_filter_completed_today': 1}</field>
+    </record>
+
+</odoo>

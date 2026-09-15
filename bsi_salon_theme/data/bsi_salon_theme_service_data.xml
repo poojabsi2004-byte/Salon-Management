@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ═══ Services ═══ -->
+        <record id="bsi_service_hair_cut" model="bsi.salon.service">
+            <field name="name">Haircut &amp; Style</field>
+            <field name="sequence">10</field>
+            <field name="bsi_category">hair</field>
+            <field name="bsi_description">Precision cut tailored to your face shape, finished with a professional blowout.</field>
+            <field name="bsi_price">From ₹499</field>
+            <field name="bsi_duration">45 min</field>
+            <field name="bsi_popular" eval="True"/>
+            <field name="bsi_image_url">https://images.unsplash.com/photo-1560869713-7d0a29430803?w=600&amp;h=400&amp;fit=crop&amp;auto=format</field>
+        </record>
+        <record id="bsi_service_hair_spa" model="bsi.salon.service">
+            <field name="name">Hair Spa</field>
+            <field name="sequence">11</field>
+            <field name="bsi_category">hair</field>
+            <field name="bsi_description">Deep-conditioning ritual with heat protection and shine serum.</field>
+            <field name="bsi_price">From ₹1,499</field>
+            <field name="bsi_duration">60 min</field>
+        </record>
+        <record id="bsi_service_hair_keratin" model="bsi.salon.service">
+            <field name="name">Keratin Treatment</field>
+            <field name="sequence">12</field>
+            <field name="bsi_category">hair</field>
+            <field name="bsi_description">Frizz-free, silky-smooth hair for up to 12 weeks.</field>
+            <field name="bsi_price">From ₹4,999</field>
+            <field name="bsi_duration">120 min</field>
+        </record>
+
+        <record id="bsi_service_colour_global" model="bsi.salon.service">
+            <field name="name">Global Hair Colour</field>
+            <field name="sequence">14</field>
+            <field name="bsi_category">colour</field>
+            <field name="bsi_description">Full colour transformation with custom shade mixing.</field>
+            <field name="bsi_price">From ₹2,999</field>
+            <field name="bsi_duration">90 min</field>
+            <field name="bsi_popular" eval="True"/>
+        </record>
+        <record id="bsi_service_colour_highlights" model="bsi.salon.service">
+            <field name="name">Highlights</field>
+            <field name="sequence">16</field>
+            <field name="bsi_category">colour</field>
+            <field name="bsi_description">Foil highlights for light-infused, dimensional results.</field>
+            <field name="bsi_price">From ₹1,999</field>
+            <field name="bsi_duration">90 min</field>
+        </record>
+
+        <record id="bsi_service_nails_manicure" model="bsi.salon.service">
+            <field name="name">Manicure</field>
+            <field name="sequence">18</field>
+            <field name="bsi_category">nails</field>
+            <field name="bsi_description">Shaping, cuticle care, hand massage, and polish.</field>
+            <field name="bsi_price">From ₹599</field>
+            <field name="bsi_duration">40 min</field>
+        </record>
+        <record id="bsi_service_nails_pedicure" model="bsi.salon.service">
+            <field name="name">Pedicure</field>
+            <field name="sequence">19</field>
+            <field name="bsi_category">nails</field>
+            <field name="bsi_description">Foot soak, exfoliation, massage, and polish.</field>
+            <field name="bsi_price">From ₹799</field>
+            <field name="bsi_duration">50 min</field>
+            <field name="bsi_popular" eval="True"/>
+        </record>
+        <record id="bsi_service_nails_art" model="bsi.salon.service">
+            <field name="name">Nail Art</field>
+            <field name="sequence">20</field>
+            <field name="bsi_category">nails</field>
+            <field name="bsi_description">Bespoke nail art from minimalist to maximalist.</field>
+            <field name="bsi_price">From ₹299</field>
+            <field name="bsi_duration">30 min</field>
+        </record>
+
+        <record id="bsi_service_skin_glow_facial" model="bsi.salon.service">
+            <field name="name">Classic Facial</field>
+            <field name="sequence">22</field>
+            <field name="bsi_category">skin</field>
+            <field name="bsi_description">Deep cleanse and glow with vitamin C and hyaluronic acid.</field>
+            <field name="bsi_price">From ₹1,299</field>
+            <field name="bsi_duration">50 min</field>
+            <field name="bsi_popular" eval="True"/>
+            <field name="bsi_image_url">https://images.unsplash.com/photo-1596740926849-2d473dee8d60?w=600&amp;h=400&amp;fit=crop&amp;auto=format</field>
+        </record>
+        <record id="bsi_service_skin_anti_ageing" model="bsi.salon.service">
+            <field name="name">Anti-Ageing Facial</field>
+            <field name="sequence">24</field>
+            <field name="bsi_category">skin</field>
+            <field name="bsi_description">Peptide-rich treatment targeting fine lines and firmness.</field>
+            <field name="bsi_price">From ₹2,499</field>
+            <field name="bsi_duration">70 min</field>
+        </record>
+        <record id="bsi_service_skin_cleanup" model="bsi.salon.service">
+            <field name="name">Cleanup</field>
+            <field name="sequence">25</field>
+            <field name="bsi_category">skin</field>
+            <field name="bsi_description">Steam, extractions, and exfoliation to refine texture.</field>
+            <field name="bsi_price">From ₹799</field>
+            <field name="bsi_duration">30 min</field>
+        </record>
+
+        <record id="bsi_service_body_waxing" model="bsi.salon.service">
+            <field name="name">Full Body Waxing</field>
+            <field name="sequence">26</field>
+            <field name="bsi_category">body</field>
+            <field name="bsi_description">Full body wax with soothing after-care lotion.</field>
+            <field name="bsi_price">From ₹1,999</field>
+            <field name="bsi_duration">60 min</field>
+        </record>
+        <record id="bsi_service_body_threading" model="bsi.salon.service">
+            <field name="name">Eyebrow Threading</field>
+            <field name="sequence">27</field>
+            <field name="bsi_category">body</field>
+            <field name="bsi_description">Precision eyebrow shaping.</field>
+            <field name="bsi_price">From ₹99</field>
+            <field name="bsi_duration">10 min</field>
+            <field name="bsi_popular" eval="True"/>
+        </record>
+
+        <record id="bsi_service_bridal_hd" model="bsi.salon.service">
+            <field name="name">HD Makeup</field>
+            <field name="sequence">28</field>
+            <field name="bsi_category">bridal</field>
+            <field name="bsi_description">Airbrush-finish HD makeup for parties and events.</field>
+            <field name="bsi_price">From ₹4,999</field>
+            <field name="bsi_duration">75 min</field>
+        </record>
+        <record id="bsi_service_bridal_wedding" model="bsi.salon.service">
+            <field name="name">Bridal Makeup</field>
+            <field name="sequence">29</field>
+            <field name="bsi_category">bridal</field>
+            <field name="bsi_description">Full bridal hair and makeup package for the big day.</field>
+            <field name="bsi_price">From ₹14,999</field>
+            <field name="bsi_duration">180 min</field>
+            <field name="bsi_popular" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,10 @@
+// Recolors Odoo's own backend primary color (top app-switcher bar, primary buttons, active
+// nav state, focus rings — everywhere $o-brand-primary/Bootstrap $primary is used) to the
+// same "heart red" as the Salon Dashboard. Loaded BEFORE web/static/src/scss/primary_variables.scss
+// (see the 'before' insertion in __manifest__.py's web._assets_primary_variables bundle), so
+// this plain assignment wins over Odoo's own !default one for the same variable name. This
+// is Odoo's own documented hook for exactly this kind of backend re-theming — not a hack —
+// but note it recolors the ENTIRE backend (every app), not just Salon Management, since
+// there's only one such primary color per install.
+$o-community-color: #ef233c;
+$o-brand-primary: #ef233c;

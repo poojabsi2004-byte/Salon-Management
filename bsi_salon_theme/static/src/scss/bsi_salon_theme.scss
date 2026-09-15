@@ -1,0 +1,1782 @@
+/* ============================================================
+   Enrich Salon Theme — design system
+   ============================================================ */
+
+:root {
+  /* True neutral light mode — white surfaces, cool grays. No pink/cream tint. */
+  --bsi-bg: #ffffff;
+  --bsi-bg2: #f6f6f7;
+  --bsi-fg: #17171a;
+  --bsi-card: #ffffff;
+  --bsi-card2: #f6f6f7;
+  --bsi-accent: #a62639f2;
+  --bsi-accent-hover: #8c1f30f2;
+  --bsi-accent-fg: #ffffff;
+  --bsi-muted: #f1f1f3;
+  --bsi-muted-fg: #6b6b70;
+  --bsi-border: #e6e6e9;
+  --bsi-nav-bg: rgba(255, 255, 255, 0.88);
+  --bsi-glass-bg: rgba(255, 255, 255, 0.8);
+  --bsi-shadow: 0 4px 32px rgba(20, 20, 24, 0.07);
+  --bsi-shadow-lg: 0 16px 48px rgba(20, 20, 24, 0.12);
+  /* Resting card shadow: a hairline lift, not a heavy drop shadow. */
+  --bsi-card-shadow: 0 0.5px 2px rgba(20, 20, 24, 0.04), 0 2px 10px rgba(20, 20, 24, 0.05);
+  --bsi-card-shadow-hover: 0 0.5px 2px rgba(20, 20, 24, 0.05), 0 20px 40px rgba(20, 20, 24, 0.13);
+  /* Radius scale — one system, reused everywhere so the page reads as one design. */
+  --bsi-radius-sm: 10px;
+  --bsi-radius-md: 16px;
+  --bsi-radius-lg: 22px;
+  --bsi-radius-pill: 999px;
+  /* Solid buttons: black-on-white in light mode, flips in dark mode. */
+  --bsi-btn-bg: #101012;
+  --bsi-btn-fg: #ffffff;
+  /* Offer banner: kept on its own tokens rather than the btn-bg/fg pair
+     above, so it doesn't have to flip to a glaring white block in dark mode. */
+  --bsi-banner-bg: #101012;
+  --bsi-banner-fg: #ffffff;
+}
+
+html[data-theme="dark"] .bsi-salon {
+  /* True neutral charcoal dark mode — no warm/brown cast. */
+  --bsi-bg: #0a0a0c;
+  --bsi-bg2: #131316;
+  --bsi-fg: #f5f5f7;
+  --bsi-card: #18181c;
+  --bsi-card2: #1e1e23;
+  --bsi-accent: #d6455af2;
+  --bsi-accent-hover: #e85f73f2;
+  --bsi-accent-fg: #0a0a0c;
+  --bsi-muted: #212126;
+  --bsi-muted-fg: #a3a3ab;
+  --bsi-border: #2b2b31;
+  --bsi-nav-bg: rgba(10, 10, 12, 0.88);
+  --bsi-glass-bg: rgba(10, 10, 12, 0.78);
+  --bsi-shadow: 0 4px 32px rgba(0, 0, 0, 0.45);
+  --bsi-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
+  --bsi-card-shadow: 0 0.5px 2px rgba(0, 0, 0, 0.3), 0 2px 12px rgba(0, 0, 0, 0.22);
+  --bsi-card-shadow-hover: 0 0.5px 2px rgba(0, 0, 0, 0.35), 0 24px 48px rgba(0, 0, 0, 0.4);
+  --bsi-btn-bg: #f5f5f7;
+  --bsi-btn-fg: #101012;
+  /* Muted dark surface instead of a bright white flip — softer, doesn't glare. */
+  --bsi-banner-bg: #17171b;
+  --bsi-banner-fg: #f5f5f7;
+}
+
+/* ── Scope reset: don't fight Odoo/Bootstrap outside the theme root ── */
+.bsi-salon {
+  font-family: 'Manrope', system-ui, sans-serif;
+  background-color: var(--bsi-bg);
+  color: var(--bsi-fg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+  /* No transition here: background-color/color are var()-driven and change
+     via the html[data-theme] ancestor selector match on toggle — several
+     browsers fail to re-resolve such a transition mid-flight and leave the
+     page stuck on the old color until reload. Theme switch snaps instantly
+     instead; everything else (cards, reveals, hovers) still animates fine. */
+
+  * {
+    box-sizing: border-box;
+  }
+
+  /* :where() keeps this reset at zero specificity, so any single-class
+     color rule (buttons, nav links, etc.) reliably wins over it instead
+     of silently losing to ".bsi-salon a"'s higher specificity. */
+  :where(a) {
+    text-decoration: none;
+    color: inherit;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+  img {
+    max-width: 100%;
+    display: block;
+  }
+}
+
+/* ── Keyframes ── */
+@keyframes bsi-fadeUp {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes bsi-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes bsi-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+@keyframes bsi-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes bsi-scaleIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes bsi-wordIn {
+  from { opacity: 0; transform: translateY(100%) rotate(4deg); }
+  to   { opacity: 1; transform: translateY(0) rotate(0); }
+}
+@keyframes bsi-progressGrow {
+  from { transform: scaleX(0); }
+}
+@keyframes bsi-countPulse {
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes bsi-ringSpin {
+  to { transform: rotate(360deg); }
+}
+@keyframes bsi-blob {
+  0%, 100% { border-radius: 42% 58% 65% 35% / 45% 40% 60% 55%; transform: translate3d(0,0,0) rotate(0deg); }
+  33%      { border-radius: 60% 40% 30% 70% / 55% 65% 35% 45%; transform: translate3d(0,-16px,0) rotate(6deg); }
+  66%      { border-radius: 35% 65% 55% 45% / 35% 55% 45% 65%; transform: translate3d(0,10px,0) rotate(-4deg); }
+}
+@keyframes bsi-pulseDot {
+  0%   { transform: scale(0.6); opacity: 0.7; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+@keyframes bsi-scrollCue {
+  0%   { transform: translateY(0); opacity: 1; }
+  70%  { opacity: 0.2; }
+  100% { transform: translateY(14px); opacity: 0; }
+}
+
+/* ── Motion system: durations kept consistent everywhere ──
+   micro: 150ms · ui: 280ms · component: 480ms · cinematic: 900ms+ (hero only) */
+:root {
+  --bsi-ease: cubic-bezier(.22,1,.36,1);
+  --bsi-dur-micro: 150ms;
+  --bsi-dur-ui: 280ms;
+  --bsi-dur-component: 480ms;
+}
+
+/* ── Scroll progress bar ── */
+.bsi-progress {
+  position: fixed; top: 0; left: 0; height: 2px; width: 100%; z-index: 1100;
+  background: transparent; pointer-events: none;
+}
+.bsi-progress__bar {
+  height: 100%; width: 100%; transform-origin: left center; transform: scaleX(0);
+  background: linear-gradient(90deg, var(--bsi-accent), #ff8a6e);
+  will-change: transform;
+}
+
+/* ── Cursor spotlight (desktop, pointer:fine, motion-safe only) ── */
+.bsi-spotlight { position: relative; isolation: isolate; }
+.bsi-spotlight::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; opacity: 0;
+  background: radial-gradient(420px circle at var(--bsi-spot-x, 50%) var(--bsi-spot-y, 50%),
+    rgba(166,38,57,0.16), transparent 65%);
+  transition: opacity 0.4s ease; pointer-events: none;
+}
+.bsi-spotlight:hover::before, .bsi-spotlight.bsi-spotlight--active::before { opacity: 1; }
+.bsi-spotlight > * { position: relative; z-index: 1; }
+
+/* ── Magnetic button wrapper: JS nudges translate via inline style.
+   Deliberately does NOT redeclare `transition` — elements using this
+   (buttons) already carry their own transition list (transform, opacity,
+   border-color); redeclaring it here would silently drop those. ── */
+.bsi-magnetic { will-change: transform; }
+
+/* ── Hero heading: word-by-word reveal ── */
+.bsi-split-word {
+  display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.05em;
+}
+.bsi-split-word > span {
+  display: inline-block;
+  opacity: 0; transform: translateY(100%) rotate(4deg);
+  animation: bsi-wordIn 0.8s var(--bsi-ease) forwards;
+  animation-delay: calc(var(--bsi-word-i, 0) * 70ms + 150ms);
+}
+/* Gradient headings split into word spans need the clip repeated on each
+   span — background-clip:text does not carry through nested inline boxes. */
+.bsi-gradient-text .bsi-split-word > span {
+  background: inherit; background-size: inherit; background-position: inherit;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+/* ── Animated counters ── */
+.bsi-counter { font-variant-numeric: tabular-nums; }
+
+/* ── Reveal direction variants (in addition to the default up-fade) ── */
+.bsi-reveal--left { transform: translateX(-32px); }
+.bsi-reveal--left.bsi-in-view { transform: translateX(0); }
+.bsi-reveal--right { transform: translateX(32px); }
+.bsi-reveal--right.bsi-in-view { transform: translateX(0); }
+.bsi-reveal--scale { transform: scale(0.92); }
+.bsi-reveal--scale.bsi-in-view { transform: scale(1); }
+
+/* ── Ambient blobs (decorative, GPU-cheap: transform + border-radius only) ── */
+.bsi-blob {
+  position: absolute; z-index: 0; filter: blur(80px); opacity: 0.07; pointer-events: none;
+  background: radial-gradient(circle at 30% 30%, var(--bsi-accent), transparent 72%);
+  animation: bsi-blob 16s ease-in-out infinite;
+}
+html[data-theme="dark"] .bsi-salon .bsi-blob { opacity: 0.14; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bsi-reveal, .bsi-reveal--left, .bsi-reveal--right, .bsi-reveal--scale {
+    opacity: 1 !important; transform: none !important; transition: none !important;
+  }
+  .bsi-split-word > span { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .bsi-float, .bsi-blob, .bsi-marquee__track, .bsi-gradient-text { animation: none !important; }
+  .bsi-magnetic { transform: none !important; }
+  .bsi-spotlight::before { display: none; }
+  .bsi-hero__live-dot::after, .bsi-hero__scroll-cue span, .bsi-hero__badge-ring, .bsi-why__proof strong::before { animation: none !important; }
+  .bsi-hero__scroll-cue { display: none !important; }
+}
+
+/* ── Scroll reveal ──
+   Two engines share these elements: a CSS-transition + IntersectionObserver
+   fallback (".bsi-in-view", in bsi_salon_theme.js) and, when GSAP +
+   ScrollTrigger are loaded, bsi_salon_theme_motion.js takes over instead —
+   see bsiInitGsapReveal there. ".bsi-gsap-reveal" is what that hand-off
+   flips on: it kills this file's own CSS transition so GSAP's per-frame
+   inline opacity/transform writes aren't *also* being CSS-transitioned
+   toward themselves (a two-easings-fighting stutter otherwise). */
+.bsi-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(.22,1,.36,1), transform 0.7s cubic-bezier(.22,1,.36,1);
+}
+.bsi-reveal.bsi-gsap-reveal { transition: none !important; }
+.bsi-reveal.bsi-in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+.bsi-float { animation: bsi-float 4s ease-in-out infinite; }
+
+/* stagger reveal within grids so cards don't all fade in at once */
+.bsi-grid-2 > .bsi-reveal, .bsi-grid-3 > .bsi-reveal, .bsi-grid-4 > .bsi-reveal, .bsi-grid-6 > .bsi-reveal,
+.bsi-features > .bsi-reveal, .bsi-process__grid > .bsi-reveal, .bsi-gallery > .bsi-reveal, .bsi-why__glass-grid > .bsi-reveal {
+  &:nth-child(2) { transition-delay: 0.08s; }
+  &:nth-child(3) { transition-delay: 0.16s; }
+  &:nth-child(4) { transition-delay: 0.24s; }
+  &:nth-child(5) { transition-delay: 0.32s; }
+  &:nth-child(6) { transition-delay: 0.4s; }
+}
+
+.bsi-gradient-text {
+  background: linear-gradient(135deg, var(--bsi-accent) 0%, #ff8a6e 60%, var(--bsi-accent) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: bsi-shimmer 4s linear infinite;
+  font-style: normal;
+}
+
+.bsi-accent { color: var(--bsi-accent); }
+.bsi-accent-text { color: var(--bsi-accent); }
+.bsi-muted { color: var(--bsi-muted-fg); font-size: 0.875rem; }
+.bsi-muted-sm { color: var(--bsi-muted-fg); font-size: 0.75rem; }
+.bsi-mb-lg { margin-bottom: 3.5rem; }
+.bsi-mb-md { margin-bottom: 1.5rem; }
+
+/* ── Typography ── */
+.bsi-salon {
+  h1, h2, h3, .bsi-h1, .bsi-h2, .bsi-h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 400;
+    line-height: 0.95;
+    color: var(--bsi-fg);
+    margin: 0;
+  }
+  .bsi-h1 { font-size: clamp(2.75rem, 6vw, 5rem); margin-bottom: 1.5rem; }
+  .bsi-h2 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 0; }
+  .bsi-h3 { font-size: clamp(1.5rem, 3vw, 2.25rem); margin-bottom: 1rem; }
+  em { font-style: normal; }
+}
+
+.bsi-eyebrow {
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bsi-accent);
+  margin-bottom: 0.75rem;
+}
+.bsi-eyebrow--on-accent { opacity: 0.85; }
+.bsi-lead {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--bsi-muted-fg);
+  max-width: 32rem;
+  margin-bottom: 1rem;
+}
+
+/* ── Layout ── */
+.bsi-container { max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; }
+.bsi-container--narrow { max-width: 900px; }
+.bsi-section { padding: 5rem 0; }
+.bsi-section--top-pad-0 { padding-top: 0; }
+.bsi-section-alt { padding: 4.5rem 0; background: var(--bsi-card2); border-top: 1px solid var(--bsi-border); border-bottom: 1px solid var(--bsi-border); }
+.bsi-section--bordered-top { border-top: 1px solid var(--bsi-border); }
+.bsi-section--bordered-bottom { border-bottom: 1px solid var(--bsi-border); padding-bottom: 3rem; padding-top: 3.5rem; }
+.bsi-section__center { text-align: center; }
+.bsi-section__head {
+  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+  gap: 1.5rem; margin-bottom: 3.5rem;
+}
+.bsi-page-hero__row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1.5rem; }
+.bsi-page-hero__sub { max-width: 20rem; font-size: 0.875rem; color: var(--bsi-muted-fg); line-height: 1.6; }
+
+/* A section that hosts a .bsi-side-pattern needs its own clipping box so
+   the art never leaks past the section edge or overlaps the next one. */
+.bsi-section--pattern { position: relative; overflow: hidden; }
+/* Lifts a section's real content above a .bsi-side-pattern (which paints
+   at z-index:0) without needing an inline style on every usage. */
+.bsi-container--above { position: relative; z-index: 1; }
+
+/* ── Reusable decorative side pattern (the salon-tools line art already
+   used as a footer backdrop) — flanks a section's content on the left or
+   right edge instead of sitting flat behind everything. A wide (1400×220)
+   horizontal SVG turned into a tall, narrow sidebar via the standard
+   rotate+compensating-translate trick, so it fills a fixed W×H box
+   anchored to that box's own top-left corner regardless of the SVG's
+   native proportions. Faded top/bottom so it reads as a soft accent, not
+   a stripe, and hidden below ~900px where there's no side margin for it
+   to sit clear of the copy. ── */
+.bsi-side-pattern {
+  /* Fixed px, not vh/%: the section this sits in is usually content-sized
+     (auto height), so a viewport- or percentage-based size drifts out of
+     proportion — too tall for a short section, clipped to nothing, or too
+     short for a tall one. A section with unusually generous vertical
+     room can hand it more via `style="--bsi-side-pattern-h: 520px"`. */
+  --bsi-side-pattern-w: 200px;
+  --bsi-side-pattern-h: 380px;
+  position: absolute; z-index: 0; pointer-events: none; overflow: hidden;
+  top: 50%; width: var(--bsi-side-pattern-w); height: var(--bsi-side-pattern-h);
+  margin-top: calc(var(--bsi-side-pattern-h) / -2);
+  color: var(--bsi-border); opacity: 0.6;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
+}
+.bsi-side-pattern--left { left: 0; }
+.bsi-side-pattern--right { right: 0; }
+.bsi-side-pattern .bsi-tools-divider {
+  position: absolute; top: 0; left: 0; max-width: none; margin: 0; padding: 0; color: inherit;
+  width: var(--bsi-side-pattern-h); height: var(--bsi-side-pattern-w);
+  transform-origin: top left;
+}
+.bsi-side-pattern--left .bsi-tools-divider { transform: rotate(90deg) translateY(-100%); }
+.bsi-side-pattern--right .bsi-tools-divider { transform: rotate(-90deg) translateX(-100%); }
+.bsi-side-pattern .bsi-tools-divider__svg { width: 100%; height: 100%; display: block; }
+html[data-theme="dark"] .bsi-salon .bsi-side-pattern { opacity: 0.4; }
+@media (max-width: 900px) { .bsi-side-pattern { display: none; } }
+
+.bsi-grid-2 { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+.bsi-grid-3 { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+.bsi-grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+.bsi-grid-6 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+@media (min-width: 768px) {
+  .bsi-grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .bsi-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .bsi-grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .bsi-grid-6 { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 1024px) {
+  .bsi-grid-6 { grid-template-columns: repeat(6, 1fr); }
+}
+/* Asymmetric variant: the first tile spans two columns *and* two rows (a
+   "lead story" cell), the rest fill in around it via dense auto-flow — a
+   3-up grid reads as an editorial feature-plus-list layout instead of
+   identical cards in a row, and it degrades gracefully to a plain 2-up
+   packed grid for any item count, not just exactly three. */
+@media (min-width: 900px) {
+  .bsi-grid-3--feature { grid-auto-flow: dense; grid-auto-rows: 1fr; }
+  .bsi-grid-3--feature > :first-child {
+    grid-column: span 2; grid-row: span 2;
+    height: 100%; display: flex; flex-direction: column;
+  }
+  .bsi-grid-3--feature > :first-child .bsi-service-card__media { flex: 1; height: auto; min-height: 20rem; }
+}
+
+.bsi-card {
+  background: var(--bsi-card);
+  border: 1px solid transparent;
+  border-radius: var(--bsi-radius-lg);
+  box-shadow: var(--bsi-card-shadow);
+  overflow: hidden;
+}
+.bsi-card--hover {
+  transition: transform var(--bsi-dur-component) var(--bsi-ease), box-shadow var(--bsi-dur-component) var(--bsi-ease), background-color var(--bsi-dur-component) ease;
+  &:hover { transform: translateY(-8px) scale(1.02); box-shadow: var(--bsi-card-shadow-hover); background: color-mix(in srgb, var(--bsi-accent) 3%, var(--bsi-card)); }
+}
+
+/* ── Buttons ── */
+.bsi-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 1rem 2rem; font-size: 0.875rem; font-weight: 600;
+  border: 1px solid transparent; white-space: nowrap; border-radius: var(--bsi-radius-sm);
+  /* transform/opacity/border-color only — NOT background-color/color: some
+     browsers fail to re-resolve a var()-driven background/color mid-transition
+     when the variable changes via an ancestor selector match (theme toggle),
+     leaving the button visually stuck on the old color until reload. Theme
+     changes should snap instantly on buttons rather than risk that. */
+  transition: transform 0.2s ease, opacity 0.2s ease, border-color 0.2s ease;
+  &:active { transform: scale(0.97); }
+}
+.bsi-btn--accent { background: var(--bsi-btn-bg); color: var(--bsi-btn-fg); }
+.bsi-btn--accent:hover { opacity: 0.9; }
+.bsi-btn--outline { background: transparent; color: var(--bsi-fg); border-color: var(--bsi-border); }
+.bsi-btn--outline:hover { border-color: var(--bsi-fg); }
+.bsi-btn--inverse { background: var(--bsi-btn-fg); color: var(--bsi-btn-bg); }
+.bsi-btn--lg { padding: 1rem 2rem; }
+.bsi-btn--block { width: 100%; padding: 0.9rem 1.5rem; margin-top: 0.5rem; background: var(--bsi-btn-bg); color: var(--bsi-btn-fg); }
+.bsi-btn--flex { flex: 1; }
+.bsi-cta-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem; }
+
+.bsi-pill-btn {
+  display: inline-flex; padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 600;
+  background: var(--bsi-muted); color: var(--bsi-fg); border-radius: var(--bsi-radius-pill);
+  transition: transform var(--bsi-dur-ui) var(--bsi-ease), opacity var(--bsi-dur-ui) ease, background-color var(--bsi-dur-ui) ease;
+}
+.bsi-pill-btn:hover { transform: scale(1.05); }
+.bsi-pill-btn:hover, .bsi-pill-btn--accent { background: var(--bsi-btn-bg); color: var(--bsi-btn-fg); }
+
+.bsi-tag-accent {
+  display: inline-block; font-family: 'Manrope', sans-serif; font-size: 10px; letter-spacing: 0.15em;
+  text-transform: uppercase; padding: 0.35rem 0.6rem; background: var(--bsi-accent); color: var(--bsi-accent-fg);
+  border-radius: var(--bsi-radius-pill);
+}
+.bsi-tag-accent--sm { font-size: 9px; padding: 0.2rem 0.5rem; }
+.bsi-tag-outline {
+  display: inline-block; font-family: 'Manrope', sans-serif; font-size: 11px; padding: 0.3rem 0.7rem;
+  border: 1px solid var(--bsi-border); color: var(--bsi-muted-fg); border-radius: var(--bsi-radius-pill);
+}
+.bsi-tag-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.bsi-strike { text-decoration: line-through; color: var(--bsi-muted-fg); font-size: 0.75rem; }
+.bsi-check { color: var(--bsi-accent); margin-right: 0.5rem; }
+.bsi-link-arrow { color: var(--bsi-accent); font-size: 0.875rem; font-weight: 500; text-decoration: underline; text-underline-offset: 4px; }
+.bsi-link-arrow:hover { opacity: 0.6; }
+
+/* ============================================================
+   Navbar
+   ============================================================ */
+.bsi-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  background: transparent; border-bottom: 1px solid transparent;
+  transition: border-color 0.3s ease;
+}
+.bsi-nav.bsi-nav--scrolled, .bsi-nav.bsi-nav--menu-open {
+  background: var(--bsi-nav-bg);
+  backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom-color: var(--bsi-border);
+}
+.bsi-nav__inner {
+  max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; height: 64px;
+  display: flex; align-items: center; gap: 1.5rem;
+}
+.bsi-nav__logo {
+  display: flex; flex-direction: column; align-items: flex-start; line-height: 1;
+  margin-right: 1rem; transition: opacity 0.2s ease;
+}
+.bsi-nav__logo:hover { opacity: 0.7; }
+.bsi-nav__logo-script { font-family: 'Alex Brush', cursive; font-size: 1.9rem; line-height: 1; color: var(--bsi-fg); }
+.bsi-nav__logo-tag {
+  font-family: 'Playfair Display', serif; font-style: italic; font-size: 0.6rem; color: var(--bsi-accent);
+  margin-top: -2px;
+}
+.bsi-nav__links { display: none; align-items: center; gap: 0.25rem; flex: 1; }
+.bsi-nav__link {
+  position: relative; z-index: 1; padding: 0.5rem 0.75rem; font-size: 0.875rem; font-weight: 500;
+  color: var(--bsi-muted-fg); text-decoration: none; transition: opacity 0.2s ease, color 220ms var(--bsi-ease);
+}
+/* No underline: a soft accent pill wipes in behind the label on hover/active
+   instead — ::before rather than ::after so it sits under the text (z-index
+   -1) without needing the text itself to be a separate stacking layer. */
+.bsi-nav__link::before {
+  content: ""; position: absolute; z-index: -1; inset: 2px 4px; border-radius: var(--bsi-radius-pill);
+  background: color-mix(in srgb, var(--bsi-accent) 12%, transparent);
+  opacity: 0; transform: scale(0.85);
+  transition: opacity var(--bsi-dur-ui) var(--bsi-ease), transform var(--bsi-dur-ui) var(--bsi-ease);
+}
+.bsi-nav__link:hover, .bsi-nav__link--active { color: var(--bsi-accent); }
+.bsi-nav__link:hover::before, .bsi-nav__link--active::before { opacity: 1; transform: scale(1); }
+.bsi-nav__actions { display: flex; align-items: center; gap: 0.75rem; margin-left: auto; }
+.bsi-nav__cta { display: none; padding: 0.6rem 1.25rem; font-size: 0.75rem; }
+.bsi-nav__dashboard-link {
+  display: none; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; font-size: 0.72rem;
+}
+
+.bsi-nav__cart { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; color: var(--bsi-fg); flex-shrink: 0; }
+.bsi-nav__cart-count {
+  position: absolute; top: -2px; right: -2px; min-width: 16px; height: 16px; padding: 0 4px;
+  display: flex; align-items: center; justify-content: center; border-radius: 999px;
+  background: var(--bsi-accent); color: var(--bsi-accent-fg); font-family: 'Manrope', sans-serif; font-size: 10px; font-weight: 700; line-height: 1;
+}
+.bsi-nav__cart-count[hidden] { display: none; }
+
+.bsi-theme-toggle {
+  position: relative; width: 48px; height: 24px; border-radius: 999px; border: none;
+  background: var(--bsi-muted); transition: transform 0.2s ease;
+}
+html[data-theme="dark"] .bsi-salon .bsi-theme-toggle { background: var(--bsi-accent); }
+.bsi-theme-toggle__thumb {
+  position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--bsi-card); display: flex; align-items: center; justify-content: center;
+  font-size: 11px; transition: transform 0.3s ease;
+}
+html[data-theme="dark"] .bsi-salon .bsi-theme-toggle__thumb { transform: translateX(24px); }
+
+.bsi-nav__burger {
+  display: flex; flex-direction: column; gap: 5px; padding: 0.25rem; background: none; border: none;
+  span { width: 22px; height: 2px; background: var(--bsi-fg); transition: transform 0.3s ease; }
+}
+.bsi-nav__burger.bsi-nav__burger--open span:nth-child(1) { transform: rotate(45deg) translate(3px, 3px); }
+.bsi-nav__burger.bsi-nav__burger--open span:nth-child(2) { opacity: 0; }
+.bsi-nav__burger.bsi-nav__burger--open span:nth-child(3) { transform: rotate(-45deg) translate(3px, -3px); }
+
+.bsi-nav__mobile {
+  max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+  display: flex; flex-direction: column; padding: 0 1.5rem;
+}
+.bsi-nav__mobile.bsi-nav__mobile--open {
+  max-height: calc(100vh - 64px); overflow-y: auto;
+  padding-bottom: 1.5rem; border-top: 1px solid var(--bsi-border);
+}
+.bsi-nav__mobile-link { padding: 0.75rem 0; font-size: 1rem; font-weight: 500; border-bottom: 1px solid var(--bsi-border); color: var(--bsi-fg); }
+.bsi-nav__mobile-cta { margin-top: 0.75rem; text-align: center; padding: 0.75rem 1.25rem; font-size: 0.875rem; }
+
+@media (min-width: 768px) {
+  .bsi-nav__links { display: flex; }
+  .bsi-nav__cta { display: inline-flex; }
+  .bsi-nav__dashboard-link { display: inline-flex; }
+  .bsi-nav__burger { display: none; }
+  .bsi-nav__mobile { display: none; }
+}
+
+.bsi-salon-main { padding-top: 0; }
+
+/* ============================================================
+   Footer
+   ============================================================ */
+/* The footer is a deliberately-always-dark surface (independent of the page
+   theme toggle) — a grounded anchor at the bottom of every page, the way a
+   lot of modern marketing sites do it. Only the footer uses these tokens. */
+.bsi-footer {
+  position: relative; overflow: hidden; margin-top: 5rem;
+  background: #0d0d0f; color: rgba(255,255,255,0.86);
+  --bsi-footer-fg: #ffffff;
+  --bsi-footer-muted: rgba(255,255,255,0.56);
+  --bsi-footer-border: rgba(255,255,255,0.1);
+}
+.bsi-footer::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--bsi-accent), transparent);
+}
+/* The salon-tools line-art (same motif used as a section divider elsewhere)
+   reused here as a faint full-bleed footer backdrop, content laid over it. */
+.bsi-footer__pattern {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  color: rgba(255,255,255,0.06);
+  display: flex; align-items: center; justify-content: center;
+}
+.bsi-footer__pattern .bsi-tools-divider { max-width: none; width: 130%; padding: 0; margin: 0; color: inherit; }
+.bsi-footer__pattern .bsi-tools-divider__svg { width: 100%; height: auto; }
+
+.bsi-footer__cta {
+  position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 3rem 1.5rem 2.5rem;
+  display: flex; flex-direction: column; gap: 1.25rem; align-items: flex-start; justify-content: space-between;
+  border-bottom: 1px solid var(--bsi-footer-border);
+}
+@media (min-width: 768px) { .bsi-footer__cta { flex-direction: row; align-items: center; } }
+.bsi-footer__cta-copy .bsi-h3 { color: var(--bsi-footer-fg); margin-bottom: 0; }
+.bsi-footer__cta-copy .bsi-eyebrow { color: var(--bsi-accent); }
+
+.bsi-footer__grid {
+  position: relative; z-index: 1;
+  max-width: 1280px; margin: 0 auto; padding: 3rem 1.5rem;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 2.5rem;
+}
+@media (min-width: 768px) { .bsi-footer__grid { grid-template-columns: repeat(4, 1fr); } }
+.bsi-footer__grid .bsi-eyebrow { color: var(--bsi-footer-muted); }
+.bsi-footer__brand { grid-column: span 2; }
+@media (min-width: 768px) { .bsi-footer__brand { grid-column: span 1; } }
+.bsi-footer__logo { font-family: 'Alex Brush', cursive; font-size: 2.5rem; line-height: 1; margin-bottom: 0.25rem; color: var(--bsi-footer-fg); }
+.bsi-footer__tagline { font-size: 0.75rem; line-height: 1.6; color: var(--bsi-footer-muted); }
+.bsi-footer__social { display: flex; gap: 0.6rem; margin-top: 1.25rem; }
+.bsi-footer__social-btn {
+  width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--bsi-footer-border); color: var(--bsi-footer-fg);
+  transition: background-color var(--bsi-dur-ui) ease, border-color var(--bsi-dur-ui) ease, transform var(--bsi-dur-ui) var(--bsi-ease);
+}
+.bsi-footer__social-btn:hover { background: var(--bsi-accent); border-color: var(--bsi-accent); }
+
+.bsi-footer__links, .bsi-footer__contact { display: flex; flex-direction: column; gap: 0.65rem; }
+.bsi-footer__links a { font-size: 0.875rem; color: var(--bsi-footer-muted); transition: color var(--bsi-dur-ui) ease, transform var(--bsi-dur-ui) var(--bsi-ease); display: inline-block; width: fit-content; }
+.bsi-footer__links a:hover { color: var(--bsi-footer-fg); transform: translateX(3px); }
+
+/* Two fixed columns (not a wrapping pill cloud) so this list stays exactly
+   as tall as it needs to be and never pushes the footer taller than the
+   Navigate column next to it. */
+.bsi-footer__locations { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem 1rem; }
+.bsi-footer__location-link {
+  font-size: 0.8rem; color: var(--bsi-footer-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: color var(--bsi-dur-ui) ease, transform var(--bsi-dur-ui) var(--bsi-ease); display: inline-block;
+}
+.bsi-footer__location-link:hover { color: var(--bsi-footer-fg); transform: translateX(3px); }
+
+.bsi-footer__contact-row { display: flex; align-items: center; gap: 0.6rem; font-size: 0.875rem; color: var(--bsi-footer-muted); }
+.bsi-footer__contact-row em { font-style: normal; opacity: 0.7; }
+.bsi-footer__contact-icon {
+  flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.06); color: var(--bsi-accent);
+}
+.bsi-footer__hours { color: var(--bsi-footer-muted); }
+
+.bsi-footer__bottom {
+  position: relative; z-index: 1; border-top: 1px solid var(--bsi-footer-border); padding: 1.25rem 1.5rem;
+  display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: space-between;
+  font-family: 'Manrope', sans-serif; font-size: 11px; color: var(--bsi-footer-muted);
+}
+.bsi-footer__to-top {
+  width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--bsi-footer-border);
+  background: rgba(255,255,255,0.05); color: var(--bsi-footer-fg); font-size: 1rem; line-height: 1;
+  transition: background-color var(--bsi-dur-ui) ease, border-color var(--bsi-dur-ui) ease;
+}
+.bsi-footer__to-top:hover { background: var(--bsi-accent); border-color: var(--bsi-accent); }
+
+/* ============================================================
+   Hero (home)
+   ============================================================ */
+.bsi-hero { position: relative; min-height: 100vh; display: flex; align-items: center; overflow: hidden; }
+.bsi-hero__bg { position: absolute; inset: -6% 0; will-change: transform; }
+.bsi-hero__bg img { width: 100%; height: 100%; object-fit: cover; }
+.bsi-hero__blob { top: -10%; right: 5%; width: 26rem; height: 26rem; }
+.bsi-hero__blob--2 { bottom: -15%; left: -5%; width: 20rem; height: 20rem; animation-delay: -6s; }
+/* Warm mesh color-grade over the photo half of the hero: sits above the
+   image but below the scrim, blended so it tints the visible photo without
+   ever dulling the scrim zone where the heading copy needs full contrast. */
+.bsi-hero__mesh {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: overlay; opacity: 0.55;
+  background:
+    radial-gradient(38% 45% at 82% 18%, rgba(255, 154, 108, 0.55), transparent 65%),
+    radial-gradient(32% 40% at 92% 82%, rgba(224, 38, 59, 0.5), transparent 65%);
+}
+.bsi-hero__scrim {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(105deg, var(--bsi-bg) 35%, rgba(13,11,9,0) 70%), linear-gradient(to top, var(--bsi-bg) 0%, transparent 40%);
+}
+.bsi-hero__content { position: relative; z-index: 2; max-width: 1280px; margin: 0 auto; padding: 7rem 1.5rem 5rem; width: 100%; }
+.bsi-hero__col {
+  max-width: 34rem;
+  padding: 2.25rem;
+  background: var(--bsi-glass-bg);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border: 1px solid var(--bsi-border);
+  box-shadow: var(--bsi-shadow-lg);
+  border-radius: var(--bsi-radius-lg);
+}
+.bsi-hero__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0; }
+
+/* Trust-signal row inside the hero card: real numbers, not more marketing copy. */
+.bsi-hero__meta { display: flex; align-items: center; gap: 1.25rem; margin-top: 1.75rem; padding-top: 1.5rem; border-top: 1px solid var(--bsi-border); }
+.bsi-hero__meta-item { display: flex; flex-direction: column; gap: 0.15rem; }
+.bsi-hero__meta-value { font-family: 'Playfair Display', serif; font-size: 1.15rem; line-height: 1; color: var(--bsi-fg); }
+.bsi-hero__meta-label { font-size: 0.6875rem; color: var(--bsi-muted-fg); white-space: nowrap; }
+.bsi-hero__meta-sep { width: 1px; height: 1.75rem; background: var(--bsi-border); flex-shrink: 0; }
+
+.bsi-hero__badge {
+  position: absolute; bottom: 2.5rem; right: 2rem; z-index: 2; display: none; flex-direction: column; align-items: center; gap: 0.5rem;
+}
+@media (min-width: 768px) { .bsi-hero__badge { display: flex; } }
+.bsi-hero__badge-stars, .bsi-hero__badge-label { display: block; }
+.bsi-hero__badge {
+  width: 96px; height: 96px; border-radius: 50%; border: 2px solid var(--bsi-accent);
+  background: var(--bsi-card); color: var(--bsi-accent);
+  align-items: center; justify-content: center; text-align: center; font-size: 0.75rem; font-weight: 500;
+}
+.bsi-hero__badge-stars { font-family: 'Playfair Display', serif; font-size: 1.1rem; }
+.bsi-hero__badge-label { font-family: 'Manrope', sans-serif; font-size: 9px; letter-spacing: 0.15em; margin-top: 0.25rem; }
+/* Slow dashed ring orbiting the rating badge — a "certified seal" cue that
+   also gives the badge somewhere to sit other than dead center of its circle. */
+.bsi-hero__badge-ring {
+  position: absolute; inset: -10px; border-radius: 50%; pointer-events: none;
+  border: 1px dashed color-mix(in srgb, var(--bsi-accent) 55%, transparent);
+  animation: bsi-ringSpin 20s linear infinite;
+}
+
+/* Floating "live" feature card, opposite the rating badge — states an actual
+   product capability (chair-level booking, see .bsi-why-glass-card #2)
+   rather than a fabricated live counter. Desktop-only: there isn't room for
+   two floating cards without crowding the hero card on smaller viewports. */
+.bsi-hero__live {
+  position: absolute; left: 2rem; bottom: 3.25rem; z-index: 2; display: none; align-items: center; gap: 0.85rem;
+  max-width: 15.5rem; padding: 0.9rem 1.15rem;
+  background: var(--bsi-glass-bg); backdrop-filter: blur(14px) saturate(1.4); -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border: 1px solid var(--bsi-border); border-radius: var(--bsi-radius-md); box-shadow: var(--bsi-shadow-lg);
+}
+@media (min-width: 1180px) { .bsi-hero__live { display: flex; } }
+.bsi-hero__live-dot { position: relative; flex-shrink: 0; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #2ecc71; }
+.bsi-hero__live-dot::after {
+  content: ""; position: absolute; inset: -0.4rem; border-radius: 50%; border: 1px solid #2ecc71;
+  animation: bsi-pulseDot 2.4s ease-out infinite;
+}
+.bsi-hero__live-copy { display: flex; flex-direction: column; gap: 0.2rem; }
+.bsi-hero__live-copy strong { font-size: 0.8125rem; font-weight: 700; color: var(--bsi-fg); }
+.bsi-hero__live-copy span { font-size: 0.6875rem; line-height: 1.4; color: var(--bsi-muted-fg); }
+
+/* Scroll cue: sits on the raw photo, so it carries its own fixed light
+   treatment instead of the theme's light/dark tokens. */
+.bsi-hero__scroll-cue {
+  position: absolute; left: 50%; bottom: 1.75rem; z-index: 2; transform: translateX(-50%);
+  display: none; align-items: flex-start; justify-content: center; width: 26px; height: 42px; padding-top: 8px;
+  border: 1.5px solid rgba(255, 255, 255, 0.55); border-radius: 999px; background: rgba(0, 0, 0, 0.15);
+}
+@media (min-width: 768px) { .bsi-hero__scroll-cue { display: flex; } }
+.bsi-hero__scroll-cue span { width: 4px; height: 8px; border-radius: 999px; background: #fff; animation: bsi-scrollCue 1.8s ease-in-out infinite; }
+
+/* ── Marquee ── */
+.bsi-marquee { overflow: hidden; padding: 1.25rem 0; border-top: 1px solid var(--bsi-border); border-bottom: 1px solid var(--bsi-border); background: var(--bsi-card2); }
+.bsi-marquee__track { display: flex; white-space: nowrap; animation: bsi-marquee 28s linear infinite; width: max-content; }
+.bsi-marquee:hover .bsi-marquee__track { animation-play-state: paused; }
+.bsi-marquee__item { display: inline-flex; align-items: center; gap: 1rem; padding: 0 1.5rem; font-size: 0.875rem; font-weight: 500; color: var(--bsi-muted-fg); }
+
+/* ============================================================
+   Why Enrich — editorial split (home)
+   A sticky intro column facing a stacked, numbered list of rows instead
+   of a 3-card grid — cards read as a generic template at this point in
+   the page, a list of rules/reasons reads as a manifesto instead.
+   ============================================================ */
+/* Header row: eyebrow+heading on one side, supporting copy + proof stat on the
+   other — sits on the plain page background, above the immersive photo panel. */
+.bsi-why-header {
+  display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2.5rem;
+}
+@media (min-width: 900px) {
+  .bsi-why-header { flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 3rem; margin-bottom: 3rem; }
+}
+.bsi-why-header .bsi-eyebrow { color: var(--bsi-accent); }
+.bsi-why-header__side { display: flex; flex-direction: column; gap: 1rem; max-width: 24rem; }
+.bsi-why-header__side p { margin: 0; font-size: 0.9375rem; line-height: 1.7; color: var(--bsi-muted-fg); }
+.bsi-why-header__side .bsi-link-arrow { align-self: flex-start; }
+
+/* Clears the fixed navbar when the hero's scroll-cue jumps straight here. */
+#bsiWhyEnrich { scroll-margin-top: 5.5rem; }
+
+.bsi-why__proof { position: relative; display: flex; align-items: baseline; gap: 0.75rem; }
+.bsi-why__proof strong { position: relative; font-family: 'Playfair Display', serif; font-weight: 400; font-size: 1.75rem; color: var(--bsi-accent); }
+.bsi-why__proof span { font-size: 0.8125rem; line-height: 1.4; color: var(--bsi-muted-fg); max-width: 10rem; }
+/* Slow dashed ring orbiting the branch-count figure — echoes the same
+   ring motif as the hero's rating badge, tying the two sections together. */
+.bsi-why__proof strong::before {
+  content: ""; position: absolute; left: -0.6rem; top: 50%; width: 2.75rem; height: 2.75rem; margin-top: -1.375rem;
+  border-radius: 50%; pointer-events: none; z-index: -1;
+  border: 1px dashed color-mix(in srgb, var(--bsi-accent) 45%, transparent);
+  animation: bsi-ringSpin 14s linear infinite;
+}
+
+/* Reasons: one full-bleed salon photo with three frosted-glass cards floating
+   on top — moodier and more immersive than a flat card grid, and the glass
+   effect stays consistent regardless of light/dark site theme since it always
+   sits over the same dark-scrimmed photo. */
+.bsi-why-immersive {
+  position: relative; overflow: hidden; isolation: isolate;
+  display: flex; align-items: center;
+  min-height: 26rem; border-radius: var(--bsi-radius-lg);
+  padding: 3rem 1.5rem;
+}
+@media (min-width: 640px) { .bsi-why-immersive { padding: 3.5rem 2rem; min-height: 30rem; } }
+.bsi-why-immersive__bg { position: absolute; inset: 0; z-index: -2; }
+.bsi-why-immersive__bg img { width: 100%; height: 100%; object-fit: cover; }
+.bsi-why-immersive__scrim { position: absolute; inset: 0; z-index: -1; background: rgba(10, 10, 12, 0.5); }
+
+.bsi-why__glass-grid { position: relative; width: 100%; display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+@media (min-width: 768px) { .bsi-why__glass-grid { grid-template-columns: repeat(3, 1fr); gap: 1.5rem; } }
+
+.bsi-why-glass-card {
+  position: relative; overflow: hidden; padding: 1.75rem; padding-bottom: 2.25rem;
+  background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.14); border-radius: var(--bsi-radius-md);
+  transform-style: preserve-3d; will-change: transform;
+  transition: transform var(--bsi-dur-component) var(--bsi-ease), background-color var(--bsi-dur-component) ease, border-color var(--bsi-dur-component) ease;
+}
+.bsi-why-glass-card:hover { transform: translateY(-6px); background: rgba(0, 0, 0, 0.58); border-color: rgba(255, 255, 255, 0.26); }
+/* While the pointer is actively tilting the card (JS-driven, see
+   bsiInitTiltCards), swap to a fast linear transition so the tilt tracks the
+   cursor directly instead of lagging behind it on the slower hover easing. */
+.bsi-why-glass-card--tilting { transition: transform 90ms linear, background-color var(--bsi-dur-component) ease, border-color var(--bsi-dur-component) ease; }
+.bsi-why-glass-card__ghost {
+  position: absolute; top: 0.25rem; right: 1rem; z-index: -1;
+  font-family: 'Playfair Display', serif; font-size: 3.75rem; line-height: 1;
+  color: rgba(255, 255, 255, 0.16);
+}
+.bsi-why-glass-card__icon {
+  width: 2.75rem; height: 2.75rem; display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; border-radius: 50%; color: #fff; margin-bottom: 1rem;
+  background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: transform var(--bsi-dur-component) var(--bsi-ease), background-color var(--bsi-dur-component) ease, border-color var(--bsi-dur-component) ease;
+}
+.bsi-why-glass-card:hover .bsi-why-glass-card__icon { transform: scale(1.1) rotate(-6deg); background: var(--bsi-accent); border-color: var(--bsi-accent); }
+.bsi-why-glass-card h3 { font-size: 1.15rem; margin: 0 0 0.5rem; color: #fff; }
+.bsi-why-glass-card p { font-size: 0.875rem; line-height: 1.6; color: rgba(255, 255, 255, 0.82); margin: 0; }
+/* Accent underline that grows in once the card has actually scrolled into
+   view (reuses the .bsi-in-view class the scroll-reveal observer already
+   adds to every .bsi-reveal element — no extra JS needed for this part). */
+.bsi-why-glass-card__bar {
+  position: absolute; left: 1.75rem; right: 1.75rem; bottom: 1.5rem; height: 2px;
+  background: linear-gradient(90deg, var(--bsi-accent), transparent);
+  transform-origin: left center; transform: scaleX(0);
+  transition: transform 0.7s var(--bsi-ease) 0.15s;
+}
+.bsi-why-glass-card.bsi-in-view .bsi-why-glass-card__bar { transform: scaleX(1); }
+
+/* ============================================================
+   Process — how booking works (home)
+   ============================================================ */
+.bsi-process { position: relative; }
+.bsi-process__grid {
+  display: grid; grid-template-columns: 1fr; gap: 2.5rem; position: relative;
+}
+@media (min-width: 768px) {
+  .bsi-process__grid { grid-template-columns: repeat(4, 1fr); }
+  .bsi-process__grid::before {
+    content: ""; position: absolute; top: 1.5rem; left: 12.5%; right: 12.5%; height: 1px;
+    background: repeating-linear-gradient(90deg, var(--bsi-border) 0 8px, transparent 8px 16px);
+  }
+}
+.bsi-process-step { position: relative; text-align: left; }
+.bsi-process-step__index {
+  width: 3rem; height: 3rem; border-radius: 50%; background: var(--bsi-card); border: 1px solid var(--bsi-border);
+  display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif;
+  font-size: 1.25rem; color: var(--bsi-accent); margin-bottom: 1.25rem; position: relative; z-index: 1;
+}
+.bsi-process-step h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
+.bsi-process-step p { font-size: 0.8rem; line-height: 1.6; color: var(--bsi-muted-fg); margin: 0; }
+
+/* ============================================================
+   Gallery bento (home)
+   ============================================================ */
+/* Uniform mosaic — every tile the same square aspect ratio, so the grid
+   always fills cleanly with no leftover gaps regardless of item count. */
+/* Bento mosaic, not a uniform square grid: the first tile spans two rows so
+   the strip reads as an art-directed mosaic instead of a stock 4-up grid. */
+.bsi-gallery { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: 1fr; gap: 0.75rem; }
+@media (min-width: 640px) { .bsi-gallery { grid-template-columns: repeat(4, 1fr); grid-auto-rows: 11rem; } }
+.bsi-gallery__item {
+  position: relative; overflow: hidden; border-radius: var(--bsi-radius-md); box-shadow: var(--bsi-card-shadow);
+  aspect-ratio: 1 / 1; border: 1px solid transparent;
+  transition: transform var(--bsi-dur-component) var(--bsi-ease), border-color var(--bsi-dur-component) var(--bsi-ease);
+}
+@media (min-width: 640px) {
+  .bsi-gallery__item { aspect-ratio: auto; }
+  .bsi-gallery__item--tall { grid-row: span 2; }
+}
+.bsi-gallery__item:hover { transform: translateY(-4px); border-color: var(--bsi-accent); }
+.bsi-gallery__item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s var(--bsi-ease); }
+.bsi-gallery__item:hover img { transform: scale(1.08); }
+
+/* ── Decorative salon-tools line-art divider ── */
+.bsi-tools-divider {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+  color: var(--bsi-border);
+}
+.bsi-tools-divider__svg { width: 100%; height: auto; display: block; }
+
+/* ── Tools showcase band (home): gives the divider its own labeled shelf,
+   with alternating icon groups tinted so the strip reads as a set of
+   crafted marks instead of one flat gray line-art block. ── */
+.bsi-toolband { position: relative; overflow: hidden; padding: 2.5rem 0 0.5rem; }
+.bsi-toolband__blob { top: -60%; left: 50%; transform: translateX(-50%); width: 34rem; height: 16rem; opacity: 0.05; }
+html[data-theme="dark"] .bsi-salon .bsi-toolband__blob { opacity: 0.12; }
+.bsi-toolband__label {
+  position: relative; z-index: 1; max-width: 640px; margin: 0 auto 0.25rem;
+  display: flex; align-items: center; gap: 1.25rem;
+  font-family: 'Manrope', sans-serif; font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--bsi-muted-fg);
+}
+.bsi-toolband__label::before, .bsi-toolband__label::after { content: ""; flex: 1; height: 1px; background: var(--bsi-border); }
+.bsi-toolband .bsi-tools-divider { position: relative; z-index: 1; }
+.bsi-toolband .bsi-tools-divider__svg > g > g:nth-of-type(odd) { color: var(--bsi-accent); opacity: 0.6; }
+.bsi-toolband .bsi-tools-divider__svg > g > g:nth-of-type(even) { color: var(--bsi-fg); opacity: 0.45; }
+
+/* ── Service card (home) ── */
+.bsi-service-card { overflow: hidden; display: block; }
+.bsi-service-card__media { position: relative; height: 14rem; overflow: hidden; }
+.bsi-service-card__media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease; }
+.bsi-service-card:hover .bsi-service-card__media img { transform: scale(1.1); }
+.bsi-service-card__scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.6), transparent); }
+.bsi-service-card__icon { position: absolute; top: 1rem; right: 1rem; font-size: 1.5rem; color: var(--bsi-accent); }
+.bsi-service-card__price { position: absolute; bottom: 1rem; left: 1rem; font-family: 'Manrope', sans-serif; font-size: 0.75rem; color: rgba(255,255,255,0.7); }
+.bsi-service-card__body { padding: 1.5rem; }
+.bsi-service-card__body h3 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+.bsi-service-card__body p { font-size: 0.875rem; line-height: 1.6; color: var(--bsi-muted-fg); }
+.bsi-service-card__cta { margin-top: 1rem; font-size: 0.75rem; font-weight: 600; color: var(--bsi-accent); display: flex; align-items: center; gap: 0.5rem; }
+
+/* ── Stats ── */
+.bsi-stat { text-align: center; }
+.bsi-stat__value { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 2.75rem); margin-bottom: 0.5rem; }
+.bsi-stat__label { font-size: 0.875rem; font-weight: 500; color: var(--bsi-muted-fg); }
+
+/* Split layout: a lead line facing the counters, so the section reads as a
+   statement backed by figures instead of a bare number grid. */
+.bsi-stats-split__row { display: flex; flex-direction: column; gap: 2.5rem; align-items: flex-start; }
+@media (min-width: 900px) { .bsi-stats-split__row { flex-direction: row; align-items: center; gap: 3.5rem; } }
+.bsi-stats-split__lead { max-width: 20rem; flex-shrink: 0; line-height: 1.2; }
+.bsi-stats-split__grid { flex: 1; width: 100%; }
+
+/* ── Offer banner ── */
+.bsi-banner {
+  position: relative; overflow: hidden; padding: 3rem 2.5rem; border-radius: var(--bsi-radius-lg);
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 2rem;
+  background: var(--bsi-banner-bg); color: var(--bsi-banner-fg); text-align: center;
+}
+@media (min-width: 768px) { .bsi-banner { flex-direction: row; padding: 4rem; text-align: left; } }
+/* Headings have their own type-selector color rule (.bsi-salon h1/h2/h3...)
+   that otherwise wins over inheriting .bsi-banner's contrasting text color,
+   leaving the heading nearly invisible against the banner's own background. */
+.bsi-banner h1, .bsi-banner h2, .bsi-banner h3,
+.bsi-banner .bsi-h1, .bsi-banner .bsi-h2, .bsi-banner .bsi-h3 { color: var(--bsi-banner-fg); }
+.bsi-banner .bsi-btn--inverse { background: var(--bsi-banner-fg); color: var(--bsi-banner-bg); }
+.bsi-banner__ring { position: absolute; border-radius: 50%; border: 40px solid var(--bsi-banner-fg); opacity: 0.08; }
+.bsi-banner__ring--1 { top: 0; right: 0; width: 18rem; height: 18rem; transform: translate(25%, -33%); }
+.bsi-banner__ring--2 { bottom: 0; left: 0; width: 12rem; height: 12rem; border-width: 30px; transform: translate(-25%, 33%); }
+.bsi-banner__copy { position: relative; }
+.bsi-banner__sub { font-size: 0.875rem; opacity: 0.8; }
+
+/* ── Testimonials ── */
+.bsi-testimonials { position: relative; min-height: 20rem; }
+.bsi-testimonial {
+  position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; text-align: center; padding: 0 1rem;
+}
+.bsi-testimonial--active { display: flex; }
+.bsi-testimonial__avatar { width: 4rem; height: 4rem; border-radius: 50%; object-fit: cover; margin-bottom: 1.25rem; border: 2px solid var(--bsi-accent); }
+.bsi-testimonial__stars { color: var(--bsi-accent); font-size: 1.5rem; margin-bottom: 1rem; }
+.bsi-testimonial__text { font-family: 'Playfair Display', serif; font-size: clamp(1.25rem, 2.5vw, 1.5rem); font-style: italic; line-height: 1.6; max-width: 42rem; margin-bottom: 1.5rem; }
+.bsi-testimonial__name { font-weight: 600; font-size: 0.875rem; }
+.bsi-testimonial__role { font-family: 'Manrope', sans-serif; font-size: 11px; color: var(--bsi-muted-fg); margin-top: 0.15rem; }
+.bsi-testimonials__dots { display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem; }
+.bsi-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--bsi-border); border: none; transition: transform 0.3s ease, width 0.3s ease; }
+.bsi-dot--active { width: 28px; background: var(--bsi-accent); }
+
+/* ============================================================
+   About page
+   ============================================================ */
+.bsi-about-hero { display: grid; grid-template-columns: 1fr; gap: 3rem; align-items: center; padding-top: 6rem; }
+@media (min-width: 768px) { .bsi-about-hero { grid-template-columns: repeat(2, 1fr); } }
+.bsi-about-hero__image { position: relative; }
+.bsi-about-hero__image img { width: 100%; object-fit: cover; max-height: 30rem; }
+.bsi-about-hero__badge {
+  position: absolute; bottom: -1rem; left: -1rem; padding: 1.25rem;
+  background: var(--bsi-card); border: 1px solid var(--bsi-border);
+}
+.bsi-about-hero__badge-value { font-family: 'Playfair Display', serif; font-size: 1.75rem; color: var(--bsi-accent); }
+.bsi-about-hero__badge-label { font-size: 0.75rem; font-weight: 500; color: var(--bsi-muted-fg); }
+
+.bsi-value-card { padding: 2rem; }
+.bsi-value-card__icon { font-size: 1.75rem; color: var(--bsi-accent); margin-bottom: 1.25rem; }
+.bsi-value-card h3 { font-size: 1.5rem; margin-bottom: 0.75rem; }
+.bsi-value-card p { font-size: 0.875rem; line-height: 1.6; color: var(--bsi-muted-fg); }
+
+.bsi-team-card { overflow: hidden; }
+.bsi-team-card__media { position: relative; height: 16rem; overflow: hidden; background: var(--bsi-muted); }
+.bsi-team-card__media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease; }
+.bsi-team-card:hover .bsi-team-card__media img { transform: scale(1.05); }
+.bsi-team-card__scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.5), transparent); opacity: 0; transition: opacity 0.3s ease; }
+.bsi-team-card:hover .bsi-team-card__scrim { opacity: 1; }
+.bsi-team-card__spec {
+  position: absolute; bottom: 0.75rem; left: 0.75rem; right: 0.75rem; opacity: 0; transition: opacity 0.3s ease;
+  font-family: 'Manrope', sans-serif; font-size: 10px; letter-spacing: 0.1em; padding: 0.25rem 0.5rem;
+  background: var(--bsi-accent); color: var(--bsi-accent-fg); display: inline-block; width: fit-content;
+}
+.bsi-team-card:hover .bsi-team-card__spec { opacity: 1; }
+.bsi-team-card__body { padding: 1rem; background: var(--bsi-card); }
+.bsi-team-card__name { font-weight: 600; font-size: 0.875rem; }
+.bsi-team-card__role { font-size: 0.75rem; color: var(--bsi-muted-fg); margin-top: 0.15rem; }
+.bsi-team-card__since { font-family: 'Manrope', sans-serif; font-size: 10px; color: var(--bsi-accent); margin-top: 0.5rem; }
+
+.bsi-awards { border-top: 1px solid var(--bsi-border); }
+.bsi-award-row { display: flex; align-items: center; gap: 1.5rem; padding: 1.25rem 0; border-bottom: 1px solid var(--bsi-border); }
+.bsi-award-row__year { font-family: 'Manrope', sans-serif; font-size: 0.875rem; color: var(--bsi-accent); flex-shrink: 0; }
+.bsi-award-row__title { font-size: 0.875rem; font-weight: 500; flex: 1; }
+.bsi-award-row__mark { color: var(--bsi-accent); font-size: 1.25rem; }
+
+/* ============================================================
+   Offers page
+   ============================================================ */
+.bsi-page-hero { padding-top: 6rem; }
+.bsi-filter-bar { position: sticky; top: 64px; z-index: 500; background: var(--bsi-bg); border-bottom: 1px solid var(--bsi-border); }
+.bsi-filter-bar__inner { display: flex; gap: 0.5rem; padding: 0.75rem 1.5rem; overflow-x: auto; align-items: center; }
+.bsi-filter-btn {
+  flex-shrink: 0; white-space: nowrap; font-size: 0.75rem; font-weight: 600; padding: 0.5rem 1rem;
+  background: var(--bsi-muted); color: var(--bsi-muted-fg); border: none; border-radius: var(--bsi-radius-pill);
+  transition: transform var(--bsi-dur-ui) var(--bsi-ease), opacity var(--bsi-dur-ui) ease, background-color var(--bsi-dur-ui) ease;
+}
+.bsi-filter-btn--active { background: var(--bsi-btn-bg); color: var(--bsi-btn-fg); }
+.bsi-filter-bar__count { margin-left: auto; flex-shrink: 0; font-family: 'Manrope', sans-serif; font-size: 11px; color: var(--bsi-muted-fg); }
+/* Embedded inline in a wizard step rather than pinned under the fixed navbar. */
+.bsi-filter-bar--static { position: static; background: none; border-bottom: none; margin-bottom: 0.5rem; }
+.bsi-filter-bar--static .bsi-filter-bar__inner { padding: 0; }
+
+.bsi-offer-card { position: relative; display: flex; flex-direction: column; }
+.bsi-offer-card__badge {
+  position: absolute; top: 0.75rem; right: 0.75rem; font-family: 'Manrope', sans-serif; font-size: 9px;
+  letter-spacing: 0.15em; text-transform: uppercase; padding: 0.15rem 0.5rem; font-weight: 600;
+  background: var(--bsi-accent); color: var(--bsi-accent-fg); border-radius: var(--bsi-radius-pill);
+}
+.bsi-offer-card__body { padding: 1.5rem; display: flex; flex-direction: column; flex: 1; }
+.bsi-offer-card__body h3 { font-size: 1.125rem; margin-bottom: 0.75rem; }
+.bsi-offer-card__body p { font-size: 0.875rem; line-height: 1.6; color: var(--bsi-muted-fg); flex: 1; }
+.bsi-offer-card__footer { display: flex; align-items: center; justify-content: space-between; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--bsi-border); }
+.bsi-offer-card__price { font-weight: 600; font-size: 1rem; color: var(--bsi-accent); }
+.bsi-offer-card__duration { font-family: 'Manrope', sans-serif; font-size: 11px; color: var(--bsi-muted-fg); margin-top: 0.1rem; }
+
+.bsi-seasonal {
+  position: relative; overflow: hidden; padding: 2.5rem; border-radius: var(--bsi-radius-lg);
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 1.5rem;
+  border: 1px solid var(--bsi-accent); background: var(--bsi-card2);
+}
+@media (min-width: 768px) { .bsi-seasonal { flex-direction: row; align-items: center; } }
+
+/* Photo-backed variant: a full-bleed image + scrim behind the same copy
+   shape, used to close the offers page on a different visual register
+   than the card grid above it. */
+.bsi-seasonal--photo { border: none; background: #101012; min-height: 16rem; }
+.bsi-seasonal__bg { position: absolute; inset: 0; z-index: 0; }
+.bsi-seasonal__bg img { width: 100%; height: 100%; object-fit: cover; }
+.bsi-seasonal__scrim { position: absolute; inset: 0; z-index: 1; background: linear-gradient(100deg, rgba(10,10,12,0.88) 30%, rgba(10,10,12,0.35) 100%); }
+.bsi-seasonal--photo .bsi-seasonal__copy { position: relative; z-index: 2; }
+.bsi-seasonal--photo .bsi-seasonal__copy h3, .bsi-seasonal--photo .bsi-seasonal__copy .bsi-h3 { color: #fff; }
+.bsi-seasonal--photo > a { position: relative; z-index: 2; }
+
+/* ============================================================
+   Packages page
+   ============================================================ */
+.bsi-packages-head { display: flex; flex-direction: column; gap: 1rem; justify-content: space-between; margin-bottom: 3rem; }
+@media (min-width: 640px) { .bsi-packages-head { flex-direction: row; align-items: center; } }
+.bsi-billing-toggle { display: flex; padding: 0.25rem; background: var(--bsi-muted); border: 1px solid var(--bsi-border); width: fit-content; border-radius: var(--bsi-radius-pill); }
+.bsi-billing-toggle__btn { padding: 0.5rem 1.25rem; font-size: 0.75rem; font-weight: 600; background: transparent; color: var(--bsi-muted-fg); border: none; border-radius: var(--bsi-radius-pill); transition: transform var(--bsi-dur-ui) var(--bsi-ease), opacity var(--bsi-dur-ui) ease, background-color var(--bsi-dur-ui) ease; }
+.bsi-billing-toggle__btn--active { background: var(--bsi-btn-bg); color: var(--bsi-btn-fg); }
+.bsi-billing-toggle__badge { font-size: 9px; opacity: 0.8; margin-left: 0.25rem; }
+
+.bsi-membership-card { position: relative; display: flex; flex-direction: column; padding: 2rem; }
+.bsi-membership-card--featured { border: 2px solid var(--bsi-accent); background: var(--bsi-accent); color: var(--bsi-accent-fg); }
+.bsi-membership-card--featured .bsi-membership-card__tagline { opacity: 0.7; }
+.bsi-membership-card--featured .bsi-btn--block { background: var(--bsi-accent-fg); color: var(--bsi-accent); }
+.bsi-membership-card--featured .bsi-check { color: var(--bsi-accent-fg); }
+.bsi-membership-card--featured h3, .bsi-membership-card--featured .bsi-membership-card__price { color: var(--bsi-accent-fg); }
+/* .bsi-card--hover's :hover rule (see the shared card system above) fades the
+   background toward --bsi-card, which is near-white in light mode — combined
+   with this card's forced --bsi-accent-fg (white) text, that made the
+   heading/price/perks unreadable on hover. Darken the accent instead of
+   washing it out so the forced white text stays legible. */
+.bsi-membership-card--featured.bsi-card--hover:hover { background: var(--bsi-accent-hover); border-color: var(--bsi-accent-hover); }
+.bsi-membership-card__ribbon {
+  position: absolute; top: -0.75rem; left: 50%; transform: translateX(-50%);
+  font-family: 'Manrope', sans-serif; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+  padding: 0.25rem 1rem; background: var(--bsi-accent-fg); color: var(--bsi-accent);
+}
+.bsi-membership-card h3 { font-size: 1.75rem; margin-bottom: 0.15rem; }
+.bsi-membership-card__tagline { font-size: 0.875rem; opacity: 0.7; margin-bottom: 1.5rem; }
+.bsi-membership-card__price { margin-bottom: 2rem; }
+.bsi-membership-card__price-value { font-family: 'Playfair Display', serif; font-size: 2.5rem; }
+.bsi-membership-card__price-unit { font-size: 0.875rem; opacity: 0.7; margin-left: 0.5rem; }
+.bsi-membership-card__perks { display: flex; flex-direction: column; gap: 0.75rem; flex: 1; margin-bottom: 2rem; }
+.bsi-membership-card__perks li { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.875rem; }
+
+.bsi-package-card { display: flex; flex-direction: column; overflow: hidden; }
+@media (min-width: 640px) { .bsi-package-card { flex-direction: row; } }
+.bsi-package-card__media { flex-shrink: 0; height: 12rem; overflow: hidden; background: var(--bsi-muted); }
+@media (min-width: 640px) { .bsi-package-card__media { width: 11rem; height: auto; } }
+.bsi-package-card__media img { width: 100%; height: 100%; object-fit: cover; }
+.bsi-package-card__body { padding: 1.5rem; display: flex; flex-direction: column; flex: 1; }
+.bsi-package-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.5rem; }
+.bsi-package-card__head h3 { font-size: 1.25rem; }
+.bsi-package-card__desc { font-size: 0.75rem; line-height: 1.6; color: var(--bsi-muted-fg); margin-bottom: 0.75rem; }
+.bsi-package-card__includes { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; margin-bottom: 1rem; }
+.bsi-package-card__includes li { font-size: 0.75rem; color: var(--bsi-muted-fg); }
+.bsi-package-card__footer { display: flex; align-items: center; gap: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--bsi-border); }
+.bsi-package-card__price { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--bsi-accent); }
+
+.bsi-giftcard { position: relative; overflow: hidden; padding: 2.5rem; border-radius: var(--bsi-radius-lg); display: flex; flex-direction: column; gap: 2rem; align-items: flex-start; justify-content: space-between; background: var(--bsi-card2); border: 1px solid var(--bsi-border); }
+@media (min-width: 768px) { .bsi-giftcard { flex-direction: row; align-items: center; padding: 3.5rem; } }
+.bsi-giftcard__ring { position: absolute; top: 0; right: 0; width: 16rem; height: 16rem; border-radius: 50%; border: 60px solid var(--bsi-accent); opacity: 0.05; transform: translate(33%, -33%); }
+
+/* ============================================================
+   Stores page
+   ============================================================ */
+.bsi-stores-layout { display: grid; grid-template-columns: 1fr; gap: 1.5rem; align-items: start; }
+@media (min-width: 768px) { .bsi-stores-layout { grid-template-columns: 300px 1fr; } }
+.bsi-stores-list { display: flex; flex-direction: column; gap: 0.5rem; }
+@media (min-width: 768px) { .bsi-stores-list { position: sticky; top: 96px; } }
+.bsi-stores-list__item {
+  display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; text-align: left; border-radius: var(--bsi-radius-md);
+  background: var(--bsi-card); border: 1px solid var(--bsi-border); color: var(--bsi-fg);
+  box-shadow: var(--bsi-card-shadow); transition: transform var(--bsi-dur-ui) var(--bsi-ease), border-color var(--bsi-dur-ui) ease;
+}
+.bsi-stores-list__item:hover { transform: translateY(-3px); border-color: var(--bsi-accent); }
+.bsi-stores-list__item--active { background: var(--bsi-btn-bg); border-color: var(--bsi-btn-bg); color: var(--bsi-btn-fg); }
+.bsi-stores-list__name { display: block; font-weight: 600; font-size: 0.875rem; }
+.bsi-stores-list__meta { display: block; font-family: 'Manrope', sans-serif; font-size: 10px; opacity: 0.8; margin-top: 0.15rem; }
+.bsi-stores-list__item { flex-wrap: wrap; }
+.bsi-stores-list__name, .bsi-stores-list__meta { flex-basis: 100%; }
+.bsi-stores-list__arrow { margin-left: auto; opacity: 0.6; font-size: 0.75rem; }
+
+.bsi-stores-detail { display: none; background: var(--bsi-card); border: 1px solid var(--bsi-border); border-radius: var(--bsi-radius-lg); overflow: hidden; box-shadow: var(--bsi-card-shadow); animation: bsi-scaleIn 0.4s ease; }
+.bsi-stores-detail--active { display: block; }
+.bsi-stores-detail__media { position: relative; height: 16rem; overflow: hidden; background: var(--bsi-muted); }
+.bsi-stores-detail__media img { width: 100%; height: 100%; object-fit: cover; }
+.bsi-stores-detail__scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.6), transparent); }
+.bsi-stores-detail__overlay { position: absolute; bottom: 1.25rem; left: 1.5rem; right: 1.5rem; display: flex; align-items: flex-end; justify-content: space-between; color: #fff; }
+.bsi-stores-detail__overlay h2 { font-family: 'Playfair Display', serif; font-size: 1.75rem; color: #fff; margin-bottom: 0.5rem; }
+.bsi-stores-detail__team-value { font-family: 'Playfair Display', serif; font-size: 1.5rem; text-align: right; }
+.bsi-stores-detail__team-label { font-size: 0.75rem; opacity: 0.7; text-align: right; }
+.bsi-stores-detail__grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; padding: 2rem; }
+@media (min-width: 640px) { .bsi-stores-detail__grid { grid-template-columns: repeat(2, 1fr); } }
+.bsi-stores-detail__phone { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; }
+.bsi-stores-detail__email { display: block; font-size: 0.875rem; }
+.bsi-stores-detail__actions { display: flex; gap: 0.75rem; padding: 0 2rem 2rem; }
+
+.bsi-hours-row { display: flex; justify-content: space-between; font-size: 0.875rem; padding: 0.15rem 0; }
+.bsi-hours-row span:last-child { font-family: 'Manrope', sans-serif; font-size: 0.75rem; }
+
+.bsi-map-placeholder { position: relative; overflow: hidden; height: 7rem; display: flex; align-items: center; justify-content: center; background: var(--bsi-muted); border: 1px solid var(--bsi-border); border-radius: var(--bsi-radius-md); }
+.bsi-map-placeholder__pin { font-size: 1.5rem; margin-bottom: 0.25rem; text-align: center; }
+.bsi-map-placeholder__coords { font-family: 'Manrope', sans-serif; font-size: 10px; color: var(--bsi-muted-fg); text-align: center; }
+
+.bsi-store-chip { text-align: left; padding: 1rem; width: 100%; }
+.bsi-store-chip__name { font-weight: 600; font-size: 0.875rem; margin-bottom: 0.25rem; }
+.bsi-store-chip__meta { font-family: 'Manrope', sans-serif; font-size: 10px; color: var(--bsi-accent); }
+.bsi-store-chip__flagship { font-family: 'Manrope', sans-serif; font-size: 9px; color: var(--bsi-muted-fg); margin-top: 0.25rem; }
+
+/* ============================================================
+   Contact page
+   ============================================================ */
+.bsi-contact-layout { display: grid; grid-template-columns: 1fr; gap: 3rem; align-items: start; }
+@media (min-width: 768px) { .bsi-contact-layout { grid-template-columns: 1fr 380px; } }
+
+.bsi-form { display: flex; flex-direction: column; gap: 1.25rem; }
+.bsi-form__row { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+@media (min-width: 640px) { .bsi-form__row { grid-template-columns: repeat(2, 1fr); } }
+.bsi-form__field { display: flex; flex-direction: column; gap: 0.4rem; }
+.bsi-form__field label {
+  font-family: 'Manrope', sans-serif; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--bsi-muted-fg);
+}
+.bsi-form__field input, .bsi-form__field select, .bsi-form__field textarea {
+  padding: 0.75rem 1rem; font-size: 0.875rem; background: var(--bsi-muted); border: 1px solid var(--bsi-border);
+  color: var(--bsi-fg); outline: none; transition: border-color var(--bsi-dur-ui) ease; font-family: inherit;
+  border-radius: var(--bsi-radius-sm);
+}
+.bsi-form__field input:focus, .bsi-form__field select:focus, .bsi-form__field textarea:focus { border-color: var(--bsi-accent); }
+.bsi-form__field textarea { resize: none; }
+.bsi-form__field[hidden] { display: none; }
+.bsi-form__field--narrow { max-width: 280px; }
+.bsi-form__hint { font-size: 0.75rem; color: var(--bsi-muted-fg); }
+.bsi-form__hint--error { color: var(--bsi-accent); font-weight: 600; }
+
+.bsi-alert { padding: 1rem 1.25rem; border-radius: var(--bsi-radius-sm); font-size: 0.85rem; margin-bottom: 1.5rem; }
+.bsi-alert--error { background: color-mix(in srgb, var(--bsi-accent) 10%, var(--bsi-card)); border: 1px solid color-mix(in srgb, var(--bsi-accent) 35%, var(--bsi-border)); color: var(--bsi-fg); }
+
+.bsi-contact-success { text-align: center; padding: 5rem 0; }
+.bsi-contact-success__mark { font-size: 3rem; color: var(--bsi-accent); margin-bottom: 1.5rem; }
+
+.bsi-contact-sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
+.bsi-sidebar-card { padding: 1.5rem; }
+.bsi-sidebar-card__row { margin-bottom: 1rem; font-size: 0.875rem; }
+.bsi-sidebar-card__row:last-child { margin-bottom: 0; }
+.bsi-sidebar-card__label { font-weight: 500; margin-bottom: 0.15rem; }
+.bsi-social-row { display: flex; align-items: center; gap: 0.75rem; font-size: 0.875rem; margin-bottom: 0.75rem; }
+.bsi-social-row:last-child { margin-bottom: 0; }
+.bsi-promo-card { padding: 1.5rem; background: var(--bsi-accent); color: var(--bsi-accent-fg); border-radius: var(--bsi-radius-lg); }
+.bsi-promo-card__eyebrow { font-family: 'Manrope', sans-serif; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.8; margin-bottom: 0.5rem; }
+.bsi-promo-card__title { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 0.5rem; }
+.bsi-promo-card__code { font-size: 0.75rem; opacity: 0.8; }
+
+/* ============================================================
+   Footer script tagline
+   ============================================================ */
+.bsi-footer__tagline-script { font-family: 'Playfair Display', serif; font-style: italic; font-size: 0.8rem; color: var(--bsi-accent); margin: 0 0 0.75rem; }
+
+/* ============================================================
+   City tabs (Stores + Booking)
+   ============================================================ */
+.bsi-city-tabs { display: flex; gap: 1.5rem; border-bottom: 1px solid var(--bsi-border); flex-wrap: wrap; margin-bottom: 2rem; }
+.bsi-city-tab { position: relative; padding: 0.75rem 0.1rem; font-size: 0.95rem; font-weight: 700; color: var(--bsi-muted-fg); background: none; border: none; cursor: pointer; }
+.bsi-city-tab::after { content: ""; position: absolute; bottom: -1px; left: 0; right: 0; height: 3px; background: var(--bsi-accent); transform: scaleX(0); transition: transform 0.2s ease; }
+.bsi-city-tab--active { color: var(--bsi-fg); }
+.bsi-city-tab--active::after, .bsi-city-tab.bsi-city-tab--active::after { transform: scaleX(1); }
+
+/* ============================================================
+   Mini map (Stores page)
+   ============================================================ */
+.bsi-stores-layout2 { display: grid; grid-template-columns: 1fr; gap: 1.5rem; align-items: start; }
+@media (min-width: 900px) { .bsi-stores-layout2 { grid-template-columns: 1.4fr 360px; } }
+.bsi-mini-map {
+  position: relative; height: 480px; overflow: hidden; border-radius: 20px; border: 1px solid var(--bsi-border);
+  background: #eef0ea;
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 43px, rgba(0,0,0,.05) 43px, rgba(0,0,0,.05) 44px),
+                     repeating-linear-gradient(90deg, transparent, transparent 58px, rgba(0,0,0,.05) 58px, rgba(0,0,0,.05) 59px);
+}
+.bsi-mini-map__road { position: absolute; background: #cfe0ea; }
+.bsi-mini-map__road--h { left: 0; right: 0; top: 38%; height: 20px; transform: skewY(-2deg); }
+.bsi-mini-map__road--v { top: 0; bottom: 0; left: 62%; width: 16px; transform: skewX(-4deg); }
+.bsi-mini-map__block { position: absolute; background: #dbe6d6; border-radius: 50%; }
+.bsi-mini-map__block--1 { left: -60px; top: 40px; width: 260px; height: 100px; transform: rotate(-8deg); }
+.bsi-mini-map__block--2 { right: -70px; bottom: -50px; width: 300px; height: 200px; }
+.bsi-mini-map__you { position: absolute; left: 8%; top: 88%; transform: translate(-50%,-50%); text-align: center; z-index: 3; }
+.bsi-mini-map__you-dot { display: block; width: 12px; height: 12px; margin: 0 auto; border-radius: 50%; background: #161213; border: 2px solid #fff; }
+.bsi-mini-map__you-label { display: block; font-size: 9px; font-weight: 700; margin-top: 3px; }
+.bsi-mini-map__pin {
+  position: absolute; transform: translate(-50%,-100%); text-align: center; z-index: 4; text-decoration: none;
+}
+.bsi-mini-map__pin-dot {
+  display: block; width: 24px; height: 24px; margin: 0 auto; border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+  background: var(--bsi-accent); box-shadow: 0 4px 8px rgba(0,0,0,.25);
+}
+.bsi-mini-map__pin--live .bsi-mini-map__pin-dot { background: #1f8a4c; }
+.bsi-mini-map__pin-label {
+  display: inline-block; margin-top: 4px; background: rgba(22,18,19,.9); color: #fff; font-size: 10px; font-weight: 700;
+  padding: 3px 8px; border-radius: 6px; white-space: nowrap;
+}
+.bsi-mini-map__status {
+  position: absolute; bottom: 0; left: 0; right: 0; background: #161213; color: #fff; padding: 10px 16px;
+  display: flex; justify-content: space-between; font-size: 12px; z-index: 5;
+}
+.bsi-mini-map__status-live { color: #3ddc84; font-weight: 700; }
+
+.bsi-stores-rail { display: flex; flex-direction: column; gap: 10px; max-height: 480px; overflow-y: auto; }
+.bsi-stores-rail__item {
+  display: flex; gap: 12px; align-items: flex-start; padding: 14px; background: var(--bsi-card);
+  border: 1px solid var(--bsi-border); text-decoration: none; color: var(--bsi-fg); border-radius: var(--bsi-radius-md);
+  box-shadow: var(--bsi-card-shadow); transition: transform var(--bsi-dur-ui) var(--bsi-ease), border-color var(--bsi-dur-ui) ease;
+}
+.bsi-stores-rail__item:hover { transform: translateY(-3px); border-color: var(--bsi-accent); }
+.bsi-stores-rail__badge {
+  width: 38px; height: 38px; border-radius: 11px; background: var(--bsi-accent); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 15px; flex-shrink: 0;
+}
+.bsi-stores-rail__badge--live { background: #1f8a4c; }
+.bsi-stores-rail__body { flex: 1; min-width: 0; }
+.bsi-stores-rail__head { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.9rem; }
+.bsi-stores-rail__rating { color: var(--bsi-muted-fg); font-weight: 600; }
+.bsi-stores-rail__foot { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.bsi-stores-rail__services { margin-top: 8px; }
+.bsi-stores-rail__services .bsi-tag-outline { font-size: 10px; padding: 0.2rem 0.55rem; }
+
+.bsi-wait-pill { font-size: 10.5px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+.bsi-wait-pill--live { background: rgba(31,138,76,.12); color: #1f8a4c; }
+.bsi-wait-pill--soon { background: rgba(232,167,31,.14); color: #a8760f; }
+.bsi-wait-pill--busy { background: rgba(166,38,57,.12); color: #8c1f30; }
+
+/* ============================================================
+   Stylists page
+   ============================================================ */
+.bsi-stylist-card { padding: 1.75rem; text-align: center; }
+.bsi-stylist-card__photo { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; margin: 0 auto 1rem; }
+.bsi-stylist-card__name { font-weight: 700; font-size: 1rem; margin-bottom: 0.2rem; }
+.bsi-stylist-card__specialty { color: var(--bsi-accent); font-weight: 700; font-size: 0.8rem; margin-bottom: 0.4rem; }
+.bsi-stylist-card__stars { color: var(--bsi-accent); margin-top: 0.6rem; }
+
+/* Split hero, same editorial language as .bsi-about-hero. */
+.bsi-stylists-hero { display: grid; grid-template-columns: 1fr; gap: 3rem; align-items: center; padding-top: 6rem; }
+@media (min-width: 768px) { .bsi-stylists-hero { grid-template-columns: 1.1fr 0.9fr; } }
+.bsi-stylists-hero__image { position: relative; }
+.bsi-stylists-hero__image img { width: 100%; object-fit: cover; max-height: 28rem; border-radius: var(--bsi-radius-lg); }
+.bsi-stylists-hero__tag {
+  position: absolute; bottom: -1rem; left: -1rem; padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.15rem;
+  background: var(--bsi-card); border: 1px solid var(--bsi-border); border-radius: var(--bsi-radius-md); box-shadow: var(--bsi-card-shadow);
+}
+.bsi-stylists-hero__tag-name { font-weight: 700; font-size: 0.9rem; }
+.bsi-stylists-hero__tag-role { font-size: 0.75rem; color: var(--bsi-accent); font-weight: 600; }
+
+/* Offset masonry roster: every 3n+2/3n+3 card nudged down so the row reads
+   as hand-arranged rather than a flush grid-3. */
+.bsi-stylists-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+@media (min-width: 768px) {
+  .bsi-stylists-grid { grid-template-columns: repeat(3, 1fr); }
+  .bsi-stylists-grid > :nth-child(3n+2) { margin-top: 2.5rem; }
+  .bsi-stylists-grid > :nth-child(3n+3) { margin-top: 1.25rem; }
+}
+
+/* ============================================================
+   Membership: wallet + gift cards
+   ============================================================ */
+.bsi-wallet-card { padding: 2rem; background: var(--bsi-btn-bg); color: var(--bsi-btn-fg); border-radius: var(--bsi-radius-lg); }
+.bsi-wallet-card h3 { color: var(--bsi-accent); }
+.bsi-giftcards-card { padding: 2rem; }
+
+/* ============================================================
+   Booking wizard
+   ============================================================ */
+/* Dashboard-style header banner (icon + title + subtitle), used instead of the
+   big editorial Playfair headline the other marketing pages use — this page is a
+   task/tool, not a landing page, so it reads calmer and more "app-like". */
+.bsi-booking-banner {
+  position: relative; overflow: hidden; isolation: isolate;
+  display: flex; align-items: center; gap: 1.25rem; padding: 1.75rem;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--bsi-accent) 7%, var(--bsi-card2)) 0%, var(--bsi-card2) 65%);
+  border: 1px solid var(--bsi-border); border-radius: var(--bsi-radius-lg); box-shadow: var(--bsi-card-shadow);
+}
+.bsi-booking-banner::after {
+  content: ""; position: absolute; z-index: -1; top: -60%; right: -8%; width: 260px; height: 260px; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--bsi-accent) 16%, transparent) 0%, transparent 72%);
+  pointer-events: none;
+}
+.bsi-booking-banner__icon {
+  flex-shrink: 0; width: 60px; height: 60px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bsi-accent); color: var(--bsi-accent-fg);
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--bsi-accent) 38%, transparent);
+  animation: bsi-float 5s ease-in-out infinite;
+}
+.bsi-booking-banner__copy .bsi-eyebrow { margin-bottom: 0.25rem; }
+/* Qualified with the element type (h1.bsi-booking-banner__title) so this wins over
+   the site-wide ".bsi-salon h1" script-font rule by specificity — this compact
+   dashboard-style banner intentionally stays a plain bold sans title, not script. */
+h1.bsi-booking-banner__title { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--bsi-fg); margin: 0 0 0.3rem; }
+.bsi-booking-banner__sub { font-size: 0.875rem; color: var(--bsi-muted-fg); margin: 0; max-width: 32rem; }
+.bsi-booking-banner__stats { display: none; margin-left: auto; flex-shrink: 0; gap: 1.5rem; padding-left: 1.5rem; border-left: 1px solid var(--bsi-border); }
+@media (min-width: 860px) { .bsi-booking-banner__stats { display: flex; } }
+.bsi-booking-banner__stat { display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 3.5rem; }
+.bsi-booking-banner__stat strong { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 600; color: var(--bsi-accent); line-height: 1; }
+.bsi-booking-banner__stat span { font-family: 'Manrope', sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--bsi-muted-fg); margin-top: 0.3rem; }
+@media (max-width: 640px) {
+  .bsi-booking-banner { flex-direction: column; align-items: flex-start; text-align: left; }
+}
+
+.bsi-booking-steps { display: flex; gap: 8px; margin-bottom: 2.5rem; }
+.bsi-booking-step {
+  flex: 1; text-align: center; font-size: 0.7rem; font-weight: 700; color: var(--bsi-muted-fg); cursor: default;
+}
+.bsi-booking-step span {
+  display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin: 0 auto 6px;
+  border-radius: 50%; background: var(--bsi-muted); color: var(--bsi-muted-fg); font-weight: 700; font-size: 0.85rem;
+  transition: transform var(--bsi-dur-ui) var(--bsi-ease), background-color var(--bsi-dur-ui) ease, color var(--bsi-dur-ui) ease;
+}
+.bsi-booking-step--active span, .bsi-booking-step--done span { background: var(--bsi-btn-bg); color: var(--bsi-btn-fg); }
+.bsi-booking-step--active { color: var(--bsi-fg); }
+/* Any step already visited (including the active one) can be clicked to jump
+   back to it — reachable steps get a pointer cursor + a hover nudge on the
+   circle so it reads as interactive; unreached steps stay inert/plain. */
+.bsi-booking-step--reachable { cursor: pointer; }
+.bsi-booking-step--reachable:hover span { transform: scale(1.12); }
+.bsi-booking-step--reachable:hover { color: var(--bsi-accent); }
+
+/* Below 700px, 7 labelled steps in a row get cramped ("Date & Time" wraps and
+   collides with its neighbours) — swap to a slim progress bar + "Step X of 7". */
+.bsi-booking-steps-mobile { display: none; }
+@media (max-width: 700px) {
+  .bsi-booking-steps { display: none; }
+  .bsi-booking-steps-mobile { display: block; margin-bottom: 2rem; }
+}
+.bsi-booking-steps-mobile__bar { height: 4px; background: var(--bsi-muted); border-radius: var(--bsi-radius-pill); overflow: hidden; margin-bottom: 0.6rem; }
+.bsi-booking-steps-mobile__fill { height: 100%; width: 14.2857%; background: var(--bsi-accent); border-radius: var(--bsi-radius-pill); transition: width var(--bsi-dur-ui) var(--bsi-ease); }
+.bsi-booking-steps-mobile__label { font-size: 0.8rem; font-weight: 700; color: var(--bsi-fg); }
+.bsi-booking-steps-mobile__label span { color: var(--bsi-accent); }
+
+.bsi-booking-panel { display: none; }
+.bsi-booking-panel--active { display: block; }
+
+/* City: animated card grid (replaces plain text tabs for the booking wizard specifically) */
+.bsi-city-card-grid { margin-bottom: 0.5rem; }
+.bsi-city-card {
+  position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem;
+  width: 100%; padding: 1.5rem; text-align: left; background: var(--bsi-card); border: 1px solid transparent;
+  border-radius: var(--bsi-radius-lg); cursor: pointer; box-shadow: var(--bsi-card-shadow);
+  transition: box-shadow var(--bsi-dur-ui) var(--bsi-ease), background-color var(--bsi-dur-ui) ease, transform var(--bsi-dur-ui) var(--bsi-ease);
+}
+.bsi-city-card:hover { transform: translateY(-4px) scale(1.02); box-shadow: var(--bsi-card-shadow-hover); }
+.bsi-city-card--selected { background: color-mix(in srgb, var(--bsi-accent) 6%, var(--bsi-card)); box-shadow: var(--bsi-card-shadow-hover); }
+.bsi-city-card__icon {
+  width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif; font-size: 1.15rem; color: var(--bsi-accent);
+  background: color-mix(in srgb, var(--bsi-accent) 10%, var(--bsi-card));
+  transition: transform var(--bsi-dur-component) var(--bsi-ease), background-color var(--bsi-dur-ui) ease, color var(--bsi-dur-ui) ease;
+}
+.bsi-city-card--selected .bsi-city-card__icon { background: var(--bsi-accent); color: var(--bsi-accent-fg); transform: scale(1.1); }
+.bsi-city-card__name { font-weight: 700; font-size: 1.05rem; }
+.bsi-city-card__meta { font-size: 0.75rem; color: var(--bsi-muted-fg); }
+.bsi-city-card__badge {
+  position: absolute; top: 14px; right: 14px; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--bsi-accent); color: var(--bsi-accent-fg); display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; opacity: 0; transform: scale(0.5);
+  transition: opacity var(--bsi-dur-ui) var(--bsi-ease), transform var(--bsi-dur-ui) var(--bsi-ease);
+}
+.bsi-city-card--selected .bsi-city-card__badge { opacity: 1; transform: scale(1); }
+
+.bsi-booking-store-list { display: flex; flex-wrap: wrap; gap: 12px; }
+.bsi-booking-store {
+  position: relative; text-align: left; padding: 16px 20px; min-width: 200px; background: var(--bsi-card); border: 1px solid transparent;
+  cursor: pointer; border-radius: var(--bsi-radius-md); box-shadow: var(--bsi-card-shadow);
+  transition: transform var(--bsi-dur-ui) var(--bsi-ease), box-shadow var(--bsi-dur-ui) ease, background-color var(--bsi-dur-ui) ease, color var(--bsi-dur-ui) ease;
+}
+.bsi-booking-store:hover { transform: translateY(-3px) scale(1.02); box-shadow: var(--bsi-card-shadow-hover); }
+.bsi-booking-store__name { display: block; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+/* Same soft accent-tint language as the City step's selected card, not the
+   solid black fill this used to have — the two steps back-to-back should
+   feel like one flow. */
+.bsi-booking-store--selected {
+  background: color-mix(in srgb, var(--bsi-accent) 8%, var(--bsi-card)); box-shadow: var(--bsi-card-shadow-hover);
+}
+.bsi-booking-store--selected .bsi-booking-store__name { color: var(--bsi-accent); }
+.bsi-booking-store--selected::after {
+  content: "✓"; position: absolute; top: 10px; right: 12px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--bsi-accent); color: var(--bsi-accent-fg); display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+}
+
+/* Services: multi-select list rows (checked state via a corner badge, like .bsi-chair) */
+.bsi-svc-check-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1rem; }
+.bsi-svc-check {
+  position: relative; display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+  background: var(--bsi-card); border: 1px solid transparent; border-radius: var(--bsi-radius-md);
+  cursor: pointer; box-shadow: var(--bsi-card-shadow);
+  transition: box-shadow var(--bsi-dur-ui) var(--bsi-ease), background-color var(--bsi-dur-ui) ease, transform var(--bsi-dur-ui) var(--bsi-ease);
+}
+.bsi-svc-check:hover { transform: translateY(-2px) scale(1.015); box-shadow: var(--bsi-card-shadow-hover); }
+.bsi-svc-check--selected { background: color-mix(in srgb, var(--bsi-accent) 6%, var(--bsi-card)); box-shadow: var(--bsi-card-shadow-hover); }
+.bsi-svc-check__badge {
+  flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--bsi-border);
+  display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
+  color: transparent; background: var(--bsi-muted); transition: background-color var(--bsi-dur-ui) ease, color var(--bsi-dur-ui) ease, border-color var(--bsi-dur-ui) ease;
+}
+.bsi-svc-check--selected .bsi-svc-check__badge { background: var(--bsi-accent); border-color: var(--bsi-accent); color: var(--bsi-accent-fg); }
+.bsi-svc-check__body { display: flex; flex-direction: column; gap: 2px; }
+.bsi-svc-check__name { font-weight: 700; font-size: 0.9rem; }
+.bsi-svc-check__meta { font-size: 0.75rem; color: var(--bsi-muted-fg); }
+
+/* Search + dropdown shell wrapping the services list (see item 4): a pill
+   search field that opens a floating, scrollable results panel instead of
+   dumping every service on screen at once, plus a row of removable chips
+   for whatever's already selected. */
+.bsi-svc-search {
+  position: relative; display: flex; align-items: center; gap: 0.5rem; padding: 0.65rem 1.1rem;
+  background: var(--bsi-card); border: 1px solid transparent; border-radius: var(--bsi-radius-pill);
+  box-shadow: var(--bsi-card-shadow); color: var(--bsi-muted-fg); margin-bottom: 0.75rem;
+  transition: box-shadow var(--bsi-dur-ui) ease;
+}
+.bsi-svc-search:focus-within { box-shadow: var(--bsi-card-shadow-hover); }
+.bsi-svc-search svg { flex-shrink: 0; }
+.bsi-svc-search input { flex: 1; border: none; background: transparent; font-size: 0.85rem; color: var(--bsi-fg); }
+.bsi-svc-search input:focus { outline: none; }
+.bsi-svc-dropdown {
+  max-height: 0; overflow: hidden; opacity: 0; transform: translateY(-6px);
+  transition: max-height var(--bsi-dur-component) var(--bsi-ease), opacity var(--bsi-dur-ui) ease, transform var(--bsi-dur-ui) var(--bsi-ease);
+}
+.bsi-svc-dropdown--open {
+  max-height: 420px; overflow-y: auto; opacity: 1; transform: translateY(0);
+  padding: 4px; margin-bottom: 0.75rem; background: var(--bsi-card2); border-radius: var(--bsi-radius-md);
+}
+.bsi-svc-dropdown--open .bsi-svc-check-grid { margin-bottom: 0; }
+.bsi-svc-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
+.bsi-svc-chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 0.4rem 0.5rem 0.4rem 0.9rem;
+  background: color-mix(in srgb, var(--bsi-accent) 10%, var(--bsi-card)); color: var(--bsi-accent);
+  border-radius: var(--bsi-radius-pill); font-size: 0.75rem; font-weight: 700; box-shadow: var(--bsi-card-shadow);
+}
+.bsi-svc-chip__remove {
+  display: flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%;
+  background: color-mix(in srgb, var(--bsi-accent) 20%, transparent); color: inherit; font-size: 11px; line-height: 1; cursor: pointer;
+  transition: background-color var(--bsi-dur-ui) ease;
+}
+.bsi-svc-chip__remove:hover { background: var(--bsi-accent); color: var(--bsi-accent-fg); }
+
+.bsi-booking-total { font-size: 0.9rem; margin-bottom: 1.5rem; }
+.bsi-booking-total strong { color: var(--bsi-accent); font-size: 1.1rem; }
+
+/* Stylist: single-select rows (radio behaviour) — same visual language as .bsi-svc-check */
+.bsi-artist-check-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.5rem; }
+.bsi-artist-check {
+  position: relative; display: flex; align-items: center; gap: 14px; padding: 12px 18px;
+  background: var(--bsi-card); border: 1px solid transparent; border-radius: var(--bsi-radius-md);
+  cursor: pointer; box-shadow: var(--bsi-card-shadow);
+  transition: box-shadow var(--bsi-dur-ui) var(--bsi-ease), background-color var(--bsi-dur-ui) ease, transform var(--bsi-dur-ui) var(--bsi-ease);
+}
+.bsi-artist-check:hover { transform: translateY(-2px) scale(1.015); box-shadow: var(--bsi-card-shadow-hover); }
+.bsi-artist-check--selected { background: color-mix(in srgb, var(--bsi-accent) 6%, var(--bsi-card)); box-shadow: var(--bsi-card-shadow-hover); }
+.bsi-artist-check__avatar {
+  flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: var(--bsi-muted);
+}
+.bsi-artist-check__avatar--any {
+  display: flex; align-items: center; justify-content: center; color: var(--bsi-accent); font-size: 1.1rem;
+}
+.bsi-artist-check__body { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.bsi-artist-check__name { font-weight: 700; font-size: 0.9rem; }
+.bsi-artist-check__meta { font-size: 0.75rem; color: var(--bsi-muted-fg); }
+.bsi-artist-check__badge {
+  flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--bsi-border);
+  display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
+  color: transparent; background: var(--bsi-muted); transition: background-color var(--bsi-dur-ui) ease, color var(--bsi-dur-ui) ease, border-color var(--bsi-dur-ui) ease;
+}
+.bsi-artist-check--selected .bsi-artist-check__badge { background: var(--bsi-accent); border-color: var(--bsi-accent); color: var(--bsi-accent-fg); }
+.bsi-artist-check--booked { cursor: not-allowed; opacity: 0.4; }
+.bsi-artist-check--booked:hover { transform: none; box-shadow: var(--bsi-card-shadow); }
+/* Search pill above the stylist list — same shell as .bsi-svc-search, just filtering in place rather than opening a dropdown. */
+.bsi-artist-search { margin-bottom: 0.75rem; }
+
+.bsi-chair-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 2rem; }
+@media (min-width: 480px) { .bsi-chair-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; } }
+@media (min-width: 900px) { .bsi-chair-grid { grid-template-columns: repeat(5, 1fr); } }
+.bsi-chair {
+  position: relative; cursor: pointer; text-align: center; perspective: 700px; padding: 14px 8px 4px;
+  border-radius: 16px; border: 1px solid transparent;
+  transition: border-color var(--bsi-dur-ui) var(--bsi-ease), background-color var(--bsi-dur-ui) var(--bsi-ease), transform var(--bsi-dur-component) var(--bsi-ease);
+}
+.bsi-chair__img {
+  width: 100%; height: 110px; object-fit: contain; mix-blend-mode: multiply; transform-style: preserve-3d;
+  transition: transform var(--bsi-dur-component) var(--bsi-ease);
+}
+@media (min-width: 480px) { .bsi-chair__img { height: 140px; } }
+@media (min-width: 900px) { .bsi-chair__img { height: 170px; } }
+.bsi-chair:hover { border-color: var(--bsi-border); background: var(--bsi-card2); transform: translateY(-4px) scale(1.02); }
+/* The pointer-tracked 3D tilt itself is driven by JS (bsiInitMotionExtras in
+   bsi_salon_theme.js, same pattern as .bsi-why-glass-card) writing directly
+   to .bsi-chair__img's inline transform on every pointermove; --tilting just
+   swaps in a fast linear transition while that's happening so the image
+   keeps up with the cursor instead of lagging on the slower eased default. */
+.bsi-chair--tilting .bsi-chair__img { transition: transform 90ms linear; }
+
+/* Selected state: a calm lift + ring outline + a check badge — no red glow. */
+.bsi-chair--selected {
+  border-color: var(--bsi-accent); background: var(--bsi-card2);
+  box-shadow: inset 0 0 0 1px var(--bsi-accent);
+}
+.bsi-chair--selected .bsi-chair__img {
+  transform: translateY(-10px) scale(1.07);
+}
+.bsi-chair--selected .bsi-chair__label { color: var(--bsi-accent); }
+.bsi-chair__badge {
+  position: absolute; top: 4px; right: 12px; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--bsi-accent); color: var(--bsi-accent-fg); display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; opacity: 0; transform: scale(0.4); z-index: 2;
+  transition: opacity var(--bsi-dur-ui) var(--bsi-ease), transform var(--bsi-dur-ui) var(--bsi-ease);
+}
+.bsi-chair--selected .bsi-chair__badge { opacity: 1; transform: scale(1); }
+.bsi-chair--booked { cursor: not-allowed; opacity: 0.35; }
+.bsi-chair--booked:hover { border-color: transparent; background: transparent; transform: none; }
+.bsi-chair__label { font-size: 0.8rem; font-weight: 700; margin-top: 8px; transition: color var(--bsi-dur-ui) ease; }
+
+/* Time & Date: slots grouped into Morning / Afternoon / Evening (see item 7) instead of one flat grid. */
+.bsi-time-group { margin-bottom: 1.25rem; }
+.bsi-time-group__heading {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--bsi-muted-fg); margin-bottom: 0.6rem;
+}
+.bsi-time-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+@media (max-width: 640px) { .bsi-time-grid { grid-template-columns: repeat(2, 1fr); } }
+.bsi-time-slot {
+  position: relative; padding: 14px; background: var(--bsi-card); border: 1px solid transparent; font-weight: 700; font-size: 0.85rem; cursor: pointer;
+  border-radius: var(--bsi-radius-sm); box-shadow: var(--bsi-card-shadow);
+  transition: transform var(--bsi-dur-ui) var(--bsi-ease), box-shadow var(--bsi-dur-ui) ease, background-color var(--bsi-dur-ui) ease, color var(--bsi-dur-ui) ease;
+}
+.bsi-time-slot:hover { transform: translateY(-2px) scale(1.03); box-shadow: var(--bsi-card-shadow-hover); }
+/* Same accent-tint language as every other "selected" state in the wizard —
+   was a solid black fill before, inconsistent with the rest of the flow. */
+.bsi-time-slot--selected { background: color-mix(in srgb, var(--bsi-accent) 10%, var(--bsi-card)); color: var(--bsi-accent); box-shadow: var(--bsi-card-shadow-hover); }
+.bsi-time-slot--full, .bsi-time-slot:disabled {
+  opacity: 0.4; cursor: not-allowed; text-decoration: line-through; box-shadow: none;
+}
+.bsi-time-slot--full:hover, .bsi-time-slot:disabled:hover { transform: none; box-shadow: none; }
+
+/* "Use a fixed slot / custom time" + "Apply Gold Membership" checkboxes:
+   a real switch instead of a plain checkbox, via appearance:none + pseudo thumb. */
+.bsi-booking-member-toggle input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none; position: relative; flex-shrink: 0; margin: 0;
+  width: 38px; height: 22px; border-radius: var(--bsi-radius-pill); background: var(--bsi-muted); cursor: pointer;
+  transition: background-color var(--bsi-dur-ui) ease;
+}
+.bsi-booking-member-toggle input[type="checkbox"]::before {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--bsi-card); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform var(--bsi-dur-ui) var(--bsi-ease);
+}
+.bsi-booking-member-toggle input[type="checkbox"]:checked { background: var(--bsi-accent); }
+.bsi-booking-member-toggle input[type="checkbox"]:checked::before { transform: translateX(16px); }
+
+.bsi-booking-summary {
+  padding: 1.5rem; background: var(--bsi-card); border: 1px solid transparent; margin-bottom: 1.5rem;
+  border-radius: var(--bsi-radius-lg); box-shadow: var(--bsi-card-shadow);
+  transition: transform var(--bsi-dur-component) var(--bsi-ease), box-shadow var(--bsi-dur-component) var(--bsi-ease);
+}
+.bsi-booking-summary:hover { transform: scale(1.01); box-shadow: var(--bsi-card-shadow-hover); }
+@media (min-width: 480px) { .bsi-booking-summary { padding: 2rem; } }
+.bsi-booking-summary__grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 1rem 0 1.25rem; font-size: 0.85rem; }
+@media (min-width: 480px) { .bsi-booking-summary__grid { grid-template-columns: repeat(2, 1fr); } }
+.bsi-booking-summary__grid label { display: block; font-weight: 700; font-size: 0.7rem; color: var(--bsi-muted-fg); margin-bottom: 2px; }
+.bsi-booking-member-toggle {
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  background: color-mix(in srgb, var(--bsi-accent) 8%, transparent); border-radius: 10px; font-size: 0.8rem; cursor: pointer;
+}
+.bsi-booking-next:disabled { opacity: 0.4; cursor: not-allowed; }
+.bsi-booking-back { margin-top: 1.5rem; background: none; border: none; color: var(--bsi-muted-fg); font-size: 0.8rem; cursor: pointer; }
+
+/* ============================================================
+   Shop page
+   ============================================================ */
+.bsi-shop-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; padding: 0.75rem 1.5rem 1rem; }
+.bsi-shop-toolbar__search {
+  flex: 1; min-width: 200px; display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.1rem;
+  background: var(--bsi-card); border: 1px solid var(--bsi-border); border-radius: var(--bsi-radius-pill); color: var(--bsi-muted-fg);
+}
+.bsi-shop-toolbar__search input {
+  flex: 1; border: none; background: transparent; font-size: 0.85rem; color: var(--bsi-fg);
+}
+.bsi-shop-toolbar__search input:focus { outline: none; }
+.bsi-shop-toolbar__sort {
+  flex-shrink: 0; padding: 0.6rem 1.1rem; background: var(--bsi-card); border: 1px solid var(--bsi-border);
+  border-radius: var(--bsi-radius-pill); font-size: 0.8rem; font-weight: 600; color: var(--bsi-fg);
+}
+
+.bsi-shop-card { position: relative; display: flex; flex-direction: column; }
+.bsi-shop-card__media { position: relative; display: block; aspect-ratio: 1 / 1; overflow: hidden; background: var(--bsi-card2); }
+.bsi-shop-card__media img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--bsi-dur-component) var(--bsi-ease); }
+.bsi-shop-card:hover .bsi-shop-card__media img { transform: scale(1.06); }
+.bsi-shop-card__quick-add {
+  position: absolute; right: 0.75rem; bottom: 0.75rem; width: 40px; height: 40px; border-radius: 50%; border: none;
+  display: flex; align-items: center; justify-content: center; background: var(--bsi-btn-bg); color: var(--bsi-btn-fg);
+  box-shadow: var(--bsi-card-shadow); opacity: 0; transform: translateY(6px); cursor: pointer;
+  transition: opacity var(--bsi-dur-ui) ease, transform var(--bsi-dur-ui) var(--bsi-ease), background-color var(--bsi-dur-ui) ease;
+}
+.bsi-shop-card:hover .bsi-shop-card__quick-add,
+.bsi-shop-card__quick-add:focus-visible { opacity: 1; transform: translateY(0); }
+.bsi-shop-card__quick-add--done { background: #1f9d55; }
+.bsi-shop-card__quick-add:disabled { cursor: wait; }
+.bsi-shop-card__body { padding: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem; flex: 1; }
+.bsi-shop-card__cat { font-family: 'Manrope', sans-serif; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--bsi-muted-fg); }
+.bsi-shop-card__body h3 { font-size: 1rem; line-height: 1.35; }
+.bsi-shop-card__body h3 a { color: inherit; }
+.bsi-shop-card__price { margin-top: auto; padding-top: 0.6rem; font-weight: 700; font-size: 1.05rem; color: var(--bsi-accent); }
+
+.bsi-shop-empty { padding: 5rem 1rem; text-align: center; color: var(--bsi-muted-fg); }
+.bsi-shop-empty p { margin-bottom: 1rem; }
+
+.bsi-shop-pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 3rem; }
+.bsi-shop-pagination__status { font-family: 'Manrope', sans-serif; font-size: 0.8rem; color: var(--bsi-muted-fg); }
+
+.bsi-shop-toast {
+  position: fixed; right: 1.5rem; bottom: 1.5rem; z-index: 1000; padding: 0.85rem 1.25rem;
+  display: flex; align-items: center; gap: 0.75rem;
+  background: var(--bsi-fg); color: var(--bsi-bg); border-radius: var(--bsi-radius-sm); font-size: 0.8rem; font-weight: 600;
+  box-shadow: var(--bsi-card-shadow-hover); opacity: 0; transform: translateY(10px); pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease; width: calc(100% - 3rem); max-width: 320px;
+}
+.bsi-shop-toast--visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.bsi-shop-toast__link { flex-shrink: 0; margin-left: auto; color: var(--bsi-accent); text-decoration: underline; white-space: nowrap; }
+
+/* ============================================================
+   Checkout — Cart / Address / Payment
+   These pages are website_sale's own stock templates (cart lines,
+   address forms, delivery/payment radios, the payment.form JS widget
+   all stay 100% base functionality). Only the surrounding chrome
+   (navbar/footer, injected via bsi_checkout_layout_inherit) and this
+   skin — remapping Bootstrap's classes onto the Enrich design tokens —
+   are custom; no functional markup, ids or data-attributes are touched.
+   ============================================================ */
+/* .bsi-nav is fixed/overlaid (transparent until scrolled), so every page needs its own
+   top clearance for it — this matches .bsi-page-hero's clearance elsewhere. Applied on
+   this wrapper (added by bsi_checkout_layout_inherit) rather than on
+   .o_website_sale_checkout_container itself because that div also carries Bootstrap's
+   "py-lg-2" utility, which compiles with !important and would win over a plain
+   padding-top at the lg breakpoint and up. */
+.bsi-salon-main--checkout { padding-top: 6rem; }
+
+.o_website_sale_checkout_container {
+  font-family: 'Manrope', system-ui, sans-serif;
+  color: var(--bsi-fg);
+
+  a { color: var(--bsi-accent); }
+  a:hover { color: var(--bsi-accent-hover); }
+
+  h4 { font-family: 'Playfair Display', Georgia, serif; font-weight: 400; font-size: 1.5rem; }
+
+  /* Step wizard (Cart > Address > Payment) */
+  .o_wizard {
+    font-family: 'Manrope', sans-serif; font-size: 0.75rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    .fw-bold { color: var(--bsi-accent); }
+    .text-muted { color: var(--bsi-muted-fg); }
+  }
+
+  /* Cards, list-group rows (address cards, delivery/payment options) and the order summary */
+  .card, .o_total_card, .list-group-item, .o_address_card {
+    background: var(--bsi-card);
+    border-color: var(--bsi-border);
+    border-radius: var(--bsi-radius-md);
+  }
+  .o_total_card { box-shadow: var(--bsi-card-shadow); }
+  .list-group-item {
+    border-radius: var(--bsi-radius-sm) !important;
+    margin-bottom: 0.5rem;
+    transition: border-color var(--bsi-dur-ui) ease, background-color var(--bsi-dur-ui) ease;
+  }
+  .list-group-item:has(.form-check-input:checked),
+  .o_address_card.border-primary {
+    border-color: var(--bsi-accent) !important;
+    background: color-mix(in srgb, var(--bsi-accent) 6%, var(--bsi-card));
+  }
+
+  /* Buttons */
+  .btn-primary {
+    background: var(--bsi-btn-bg); border-color: var(--bsi-btn-bg); color: var(--bsi-btn-fg);
+    border-radius: var(--bsi-radius-sm);
+  }
+  .btn-primary:hover, .btn-primary:focus, .btn-primary:disabled {
+    background: var(--bsi-btn-bg); border-color: var(--bsi-btn-bg); color: var(--bsi-btn-fg); opacity: 0.9;
+  }
+  .btn-outline-primary { color: var(--bsi-fg); border-color: var(--bsi-border); border-radius: var(--bsi-radius-sm); }
+  .btn-outline-primary:hover { background: var(--bsi-muted); color: var(--bsi-fg); border-color: var(--bsi-fg); }
+  .btn-light { background: var(--bsi-muted); border-color: var(--bsi-muted); color: var(--bsi-fg); border-radius: var(--bsi-radius-sm); }
+  .btn-light:hover { background: var(--bsi-border); border-color: var(--bsi-border); color: var(--bsi-fg); }
+  .btn-link { color: var(--bsi-accent); text-decoration: none; }
+  .btn-link:hover { color: var(--bsi-accent-hover); }
+
+  /* Form controls */
+  .form-control, .form-select {
+    background: var(--bsi-card); border-color: var(--bsi-border); color: var(--bsi-fg);
+    border-radius: var(--bsi-radius-sm);
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--bsi-accent); background: var(--bsi-card); color: var(--bsi-fg);
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--bsi-accent) 18%, transparent);
+  }
+  .form-check-input { accent-color: var(--bsi-accent); }
+
+  /* Order summary total table */
+  .o_cart_total table { font-size: 0.875rem; }
+  .o_cart_total [name="o_order_total"] strong { color: var(--bsi-fg); font-size: 1.15rem; }
+
+  /* Cart lines */
+  .o_cart_product_image img, .o_cart_product_image > div {
+    border-radius: var(--bsi-radius-sm) !important;
+    border-color: var(--bsi-border) !important;
+  }
+  .js_delete_product { color: var(--bsi-muted-fg); }
+  .js_delete_product:hover { color: var(--bsi-accent); }
+  .css_quantity .btn { border-color: var(--bsi-border); color: var(--bsi-fg); }
+  .css_quantity .quantity { border-color: var(--bsi-border); background: var(--bsi-card); color: var(--bsi-fg); }
+}
+
+/* ══ Customer portal: "Leave a Review" (bsi_portal_appointment_detail) ══ Kept unnested
+   (portal pages don't carry the .bsi-salon body class the public website does) — a plain
+   CSS-only 1-5 star picker: radios in reverse DOM order + flex row-reverse so the visual
+   left-to-right order still reads 1★→5★, with :checked/:hover driving the fill via ~. */
+.bsi-star-rating {
+  display: inline-flex; flex-direction: row-reverse; justify-content: flex-end;
+}
+.bsi-star-rating input { position: absolute; opacity: 0; pointer-events: none; }
+.bsi-star-rating label {
+  color: #d8d8d8; cursor: pointer; font-size: 1.6rem; line-height: 1; padding: 0 2px;
+  transition: color 0.15s ease;
+}
+.bsi-star-rating input:checked ~ label,
+.bsi-star-rating label:hover,
+.bsi-star-rating label:hover ~ label {
+  color: #f5a623;
+}
+.bsi-review-section { max-width: 480px; }

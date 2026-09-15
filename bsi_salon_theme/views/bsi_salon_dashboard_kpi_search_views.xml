@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══ Search view additions for the Salon Dashboard's KPI card click-through ═══
+         Each filter below is toggled on via search_default_<name> in the matching KPI
+         action's context (see bsi_salon_dashboard_kpi_actions.xml) so opening a card shows
+         a real, visible, removable filter chip — not an invisible base domain the user has
+         no way to see or clear. -->
+
+    <record id="bsi_salon_dashboard_kpi_invoice_search_inherit" model="ir.ui.view">
+        <field name="name">account.move.select.salon.kpi</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter string="Salon Revenue Today" name="bsi_filter_salon_revenue_today"
+                        domain="[('invoice_origin', 'like', 'Salon Appointment'), ('invoice_date', '=', context_today()), ('payment_state', 'in', ['paid', 'in_payment', 'partial']), ('move_type', '=', 'out_invoice')]"/>
+                <filter string="Salon Pending Payments" name="bsi_filter_salon_pending"
+                        domain="[('invoice_origin', 'like', 'Salon Appointment'), ('state', '=', 'posted'), ('payment_state', 'in', ['not_paid', 'partial']), ('move_type', '=', 'out_invoice')]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="bsi_salon_dashboard_kpi_partner_search_inherit" model="ir.ui.view">
+        <field name="name">res.partner.select.salon.kpi</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter string="New Salon Customers Today" name="bsi_filter_new_customers_today"
+                        domain="[('create_date', '&gt;=', context_today().strftime('%Y-%m-%d')), ('bsi_booking_ids', '!=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- The one line item used to show a membership discount as a single deduction on a
+         quotation (see bsi.salon.booking.request._bsi_create_quotation) instead of a
+         per-service "Disc.%" on every line — a normal sale.order.line always needs a real
+         product (see the core CHECK constraint on product_id), so this is that product. -->
+    <record id="bsi_salon_discount_product" model="product.product">
+        <field name="name">Membership Discount</field>
+        <field name="type">service</field>
+        <field name="list_price">0.0</field>
+        <field name="sale_ok" eval="True"/>
+        <field name="purchase_ok" eval="False"/>
+    </record>
+</odoo>

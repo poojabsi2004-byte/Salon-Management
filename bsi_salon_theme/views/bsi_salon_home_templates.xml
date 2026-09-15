@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="bsi_page_home" name="Salon Theme: Home">
+        <t t-call="bsi_salon_theme.bsi_layout">
+            <t t-set="icons" t-value="{'hair': '✦', 'colour': '❖', 'nails': '◇', 'skin': '◈', 'body': '❀', 'bridal': '♥'}"/>
+            <!-- Curated, category-matched fallback photos (only used when a service record has
+                 no bsi_image_url of its own) so two different services never render the same
+                 stock photo — pick per category, and cycle within a category if it repeats. -->
+            <t t-set="service_fallbacks" t-value="{
+                'hair': ['https://images.unsplash.com/photo-1560869713-7d0a29430803?w=800&amp;h=600&amp;fit=crop&amp;auto=format&amp;q=80', 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=800&amp;h=600&amp;fit=crop&amp;auto=format&amp;q=80'],
+                'colour': ['https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=800&amp;h=600&amp;fit=crop&amp;auto=format&amp;q=80'],
+                'nails': ['https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&amp;h=600&amp;fit=crop&amp;auto=format&amp;q=80'],
+                'skin': ['https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=800&amp;h=600&amp;fit=crop&amp;auto=format&amp;q=80'],
+                'body': ['https://images.unsplash.com/photo-1600948836101-f9ffda59d250?w=800&amp;h=600&amp;fit=crop&amp;auto=format&amp;q=80'],
+                'bridal': ['https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?w=800&amp;h=600&amp;fit=crop&amp;auto=format&amp;q=80'],
+            }"/>
+            <t t-set="service_fallback_default" t-value="['https://images.unsplash.com/photo-1560869713-7d0a29430803?w=800&amp;h=600&amp;fit=crop&amp;auto=format&amp;q=80']"/>
+
+            <!-- Hero -->
+            <section class="bsi-hero">
+                <div class="bsi-hero__bg">
+                    <img src="https://images.unsplash.com/photo-1600948836101-f9ffda59d250?w=1600&amp;h=900&amp;fit=crop&amp;auto=format" alt="Salon interior"/>
+                    <div class="bsi-hero__mesh" aria-hidden="true"/>
+                    <div class="bsi-hero__scrim"/>
+                </div>
+                <div class="bsi-blob bsi-hero__blob"/>
+                <div class="bsi-blob bsi-hero__blob--2"/>
+                <div class="bsi-hero__content">
+                    <div class="bsi-hero__col bsi-spotlight bsi-reveal">
+                        <p class="bsi-eyebrow">Premium Salon Chain · 100+ Locations</p>
+                        <h1 class="bsi-h1"><span data-split-words="1">Your beauty,</span><br/><em class="bsi-gradient-text" data-split-words="1">enriched.</em></h1>
+                        <p class="bsi-lead">Hair, skin, makeup and wellness — delivered with the precision of India's most trusted salon chain. Real branches, real chairs, real stylists — book in seconds.</p>
+                        <div class="bsi-hero__actions">
+                            <a href="/salon/booking" class="bsi-btn bsi-btn--accent bsi-btn--lg bsi-magnetic">Book a Booking</a>
+                            <a href="/salon/packages" class="bsi-btn bsi-btn--outline bsi-btn--lg bsi-magnetic">Explore Membership</a>
+                        </div>
+                        <div class="bsi-hero__meta">
+                            <div class="bsi-hero__meta-item">
+                                <span class="bsi-hero__meta-value"><span class="bsi-counter" data-count="4.8" data-suffix="★">0</span></span>
+                                <span class="bsi-hero__meta-label">Average rating</span>
+                            </div>
+                            <span class="bsi-hero__meta-sep" aria-hidden="true"/>
+                            <div class="bsi-hero__meta-item">
+                                <span class="bsi-hero__meta-value"><span class="bsi-counter" data-count="100" data-suffix="+">0</span></span>
+                                <span class="bsi-hero__meta-label">Locations</span>
+                            </div>
+                            <span class="bsi-hero__meta-sep" aria-hidden="true"/>
+                            <div class="bsi-hero__meta-item">
+                                <span class="bsi-hero__meta-value"><span class="bsi-counter" data-count="1" data-suffix="M+">0</span></span>
+                                <span class="bsi-hero__meta-label">Happy clients</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bsi-hero__live bsi-float">
+                    <span class="bsi-hero__live-dot" aria-hidden="true"/>
+                    <div class="bsi-hero__live-copy">
+                        <strong>Live chair availability</strong>
+                        <span>Book the exact seat — not just a time slot.</span>
+                    </div>
+                </div>
+                <div class="bsi-hero__badge bsi-float">
+                    <span class="bsi-hero__badge-ring" aria-hidden="true"/>
+                    <span class="bsi-hero__badge-stars">★★★★★</span>
+                    <span class="bsi-hero__badge-label">4.8-STAR<br/>RATED</span>
+                </div>
+                <a href="#bsiWhyEnrich" class="bsi-hero__scroll-cue" aria-label="Scroll to explore">
+                    <span/>
+                </a>
+            </section>
+
+            <!-- Marquee -->
+            <div class="bsi-marquee">
+                <div class="bsi-marquee__track">
+                    <t t-foreach="2" t-as="loop_i">
+                        <t t-foreach="['Hair Colour', 'Keratin Treatment', 'Global Colour', 'Bridal Makeup', 'HD Makeup', 'Nail Art', 'Facials', 'Waxing &amp; Threading', 'Hair Spa', 'Manicure', 'Pedicure', 'Blowouts']" t-as="item">
+                            <span class="bsi-marquee__item"><span t-esc="item"/> <span class="bsi-accent-text">✦</span></span>
+                        </t>
+                    </t>
+                </div>
+            </div>
+
+            <!-- Tools showcase band removed per request -->
+
+            <!-- Why Enrich -->
+            <section id="bsiWhyEnrich" class="bsi-section bsi-container">
+                <div class="bsi-why-header bsi-reveal">
+                    <div>
+                        <p class="bsi-eyebrow">Why Enrich</p>
+                        <h2 class="bsi-h2">Built around<br/><em>your chair.</em></h2>
+                    </div>
+                    <div class="bsi-why-header__side">
+                        <p>Three things every visit is built on — not marketing lines, the actual reasons 100+ branches run the same way.</p>
+                        <div class="bsi-why__proof">
+                            <strong><span class="bsi-counter" data-count="100" data-suffix="+">0</span></strong>
+                            <span>branches nationwide, one standard</span>
+                        </div>
+                        <a href="/salon/about" class="bsi-link-arrow">Our story →</a>
+                    </div>
+                </div>
+
+                <div class="bsi-why-immersive bsi-reveal">
+                    <div class="bsi-why-immersive__bg">
+                        <img src="https://images.unsplash.com/photo-1600948836101-f9ffda59d250?w=1600&amp;h=1000&amp;fit=crop&amp;auto=format&amp;q=80" alt="Enrich salon interior"/>
+                    </div>
+                    <div class="bsi-why-immersive__scrim"/>
+                    <div class="bsi-why__glass-grid">
+                        <div class="bsi-why-glass-card bsi-reveal">
+                            <span class="bsi-why-glass-card__ghost" aria-hidden="true">01</span>
+                            <div class="bsi-why-glass-card__icon">✦</div>
+                            <h3>Trained, certified stylists</h3>
+                            <p>Every artist completes Enrich's in-house academy before touching a single chair — consistent quality, branch to branch.</p>
+                            <span class="bsi-why-glass-card__bar" aria-hidden="true"/>
+                        </div>
+                        <div class="bsi-why-glass-card bsi-reveal">
+                            <span class="bsi-why-glass-card__ghost" aria-hidden="true">02</span>
+                            <div class="bsi-why-glass-card__icon">◈</div>
+                            <h3>Real-time chair booking</h3>
+                            <p>See exactly which chair, at which branch, is free right now — no phone calls, no guessing, no waiting rooms.</p>
+                            <span class="bsi-why-glass-card__bar" aria-hidden="true"/>
+                        </div>
+                        <div class="bsi-why-glass-card bsi-reveal">
+                            <span class="bsi-why-glass-card__ghost" aria-hidden="true">03</span>
+                            <div class="bsi-why-glass-card__icon">❖</div>
+                            <h3>Premium, honest products</h3>
+                            <p>Only professional-grade colour and skincare lines — never diluted, never swapped, always disclosed on your invoice.</p>
+                            <span class="bsi-why-glass-card__bar" aria-hidden="true"/>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Services -->
+            <section class="bsi-section bsi-container">
+                <div class="bsi-section__head bsi-reveal">
+                    <div>
+                        <p class="bsi-eyebrow">Featured Services</p>
+                        <h2 class="bsi-h2">Crafted for<br/><em>every version of you.</em></h2>
+                    </div>
+                    <a href="/salon/offers" class="bsi-link-arrow">View all services →</a>
+                </div>
+                <div class="bsi-grid-3 bsi-grid-3--feature">
+                    <a t-foreach="featured_services" t-as="s" t-attf-href="/salon/offers" class="bsi-card bsi-card--hover bsi-service-card bsi-reveal">
+                        <t t-set="_pool" t-value="service_fallbacks.get(s.bsi_category, service_fallback_default)"/>
+                        <div class="bsi-service-card__media">
+                            <img t-att-src="('/web/image/%s' % s.bsi_image_ids[0].id) if s.bsi_image_ids else (s.bsi_image_url or _pool[s_index % len(_pool)])" t-att-alt="s.name"/>
+                            <div class="bsi-service-card__scrim"/>
+                            <div class="bsi-service-card__icon" t-esc="icons.get(s.bsi_category, '✦')"/>
+                            <div class="bsi-service-card__price" t-esc="s.bsi_price"/>
+                        </div>
+                        <div class="bsi-service-card__body">
+                            <h3 t-esc="s.name"/>
+                            <p t-esc="s.bsi_description"/>
+                            <div class="bsi-service-card__cta">Explore <t t-esc="s.name"/> <span>→</span></div>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Process: how booking works -->
+            <section class="bsi-section-alt bsi-process">
+                <div class="bsi-container">
+                    <div class="bsi-section__center bsi-reveal">
+                        <p class="bsi-eyebrow">How It Works</p>
+                        <h2 class="bsi-h2">Four steps to<br/><em>your best hair day.</em></h2>
+                    </div>
+                    <div class="bsi-process__grid">
+                        <div class="bsi-process-step bsi-reveal">
+                            <div class="bsi-process-step__index">1</div>
+                            <h3>Pick a service</h3>
+                            <p>Browse the full menu — hair, skin, nails, bridal — and see live pricing upfront.</p>
+                        </div>
+                        <div class="bsi-process-step bsi-reveal">
+                            <div class="bsi-process-step__index">2</div>
+                            <h3>Choose your branch</h3>
+                            <p>Pick from 100+ locations across India, filtered by your city.</p>
+                        </div>
+                        <div class="bsi-process-step bsi-reveal">
+                            <div class="bsi-process-step__index">3</div>
+                            <h3>Select a chair &amp; time</h3>
+                            <p>See real chairs and real slots — no waitlists, no double-booking.</p>
+                        </div>
+                        <div class="bsi-process-step bsi-reveal">
+                            <div class="bsi-process-step__index">4</div>
+                            <h3>Walk in, sit down</h3>
+                            <p>Show your confirmation at the counter — your stylist is already expecting you.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats: a lead line facing the figures, not a bare number grid -->
+            <section class="bsi-section bsi-stats-split">
+                <div class="bsi-container bsi-stats-split__row">
+                    <p class="bsi-h3 bsi-stats-split__lead bsi-reveal">A quarter century of<br/><em class="bsi-accent">one</em> standard, everywhere.</p>
+                    <div class="bsi-grid-4 bsi-stats-split__grid">
+                        <div class="bsi-stat bsi-reveal"><div class="bsi-stat__value bsi-gradient-text"><span class="bsi-counter" data-count="100" data-suffix="+">0</span></div><div class="bsi-stat__label">Locations</div></div>
+                        <div class="bsi-stat bsi-reveal"><div class="bsi-stat__value bsi-gradient-text"><span class="bsi-counter" data-count="25" data-suffix="+">0</span></div><div class="bsi-stat__label">Years of excellence</div></div>
+                        <div class="bsi-stat bsi-reveal"><div class="bsi-stat__value bsi-gradient-text"><span class="bsi-counter" data-count="1" data-suffix="M+">0</span></div><div class="bsi-stat__label">Happy clients</div></div>
+                        <div class="bsi-stat bsi-reveal"><div class="bsi-stat__value bsi-gradient-text"><span class="bsi-counter" data-count="4.8" data-suffix="★">0</span></div><div class="bsi-stat__label">Average rating</div></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Offer banner -->
+            <section class="bsi-section bsi-container bsi-section--top-pad-0">
+                <div class="bsi-banner bsi-spotlight">
+                    <div class="bsi-banner__ring bsi-banner__ring--1"/>
+                    <div class="bsi-banner__ring bsi-banner__ring--2"/>
+                    <div class="bsi-banner__copy">
+                        <p class="bsi-eyebrow bsi-eyebrow--on-accent">Gold Membership</p>
+                        <h3 class="bsi-h3">New member? Get 20% off<br/><em>every visit.</em></h3>
+                        <p class="bsi-banner__sub">Plus priority booking, free spa add-ons, and a loyalty wallet.</p>
+                    </div>
+                    <a href="/salon/packages" class="bsi-btn bsi-btn--inverse bsi-magnetic">See Membership</a>
+                </div>
+            </section>
+
+            <!-- Gallery -->
+            <section class="bsi-section bsi-container bsi-section--top-pad-0">
+                <div class="bsi-section__head bsi-reveal">
+                    <div>
+                        <p class="bsi-eyebrow">Inside Enrich</p>
+                        <h2 class="bsi-h2">A look<br/><em>behind the chair.</em></h2>
+                    </div>
+                </div>
+                <div class="bsi-gallery">
+                    <div class="bsi-gallery__item bsi-gallery__item--tall bsi-reveal bsi-reveal--scale">
+                        <img src="https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?w=600&amp;h=1200&amp;fit=crop&amp;auto=format&amp;q=80" alt="Stylist styling a client's hair"/>
+                    </div>
+                    <div class="bsi-gallery__item bsi-reveal bsi-reveal--scale">
+                        <img src="https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=600&amp;h=600&amp;fit=crop&amp;auto=format&amp;q=80" alt="Hair colour swatches"/>
+                    </div>
+                    <div class="bsi-gallery__item bsi-gallery__item--tall bsi-reveal bsi-reveal--scale">
+                        <img src="https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&amp;h=1200&amp;fit=crop&amp;auto=format&amp;q=80" alt="Manicure in progress"/>
+                    </div>
+                    <div class="bsi-gallery__item bsi-reveal bsi-reveal--scale">
+                        <img src="https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=600&amp;h=600&amp;fit=crop&amp;auto=format&amp;q=80" alt="Salon reception area"/>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Testimonials -->
+            <section class="bsi-section bsi-section--bordered-top">
+                <div class="bsi-container bsi-container--narrow">
+                    <div class="bsi-section__center bsi-reveal">
+                        <p class="bsi-eyebrow">Client Stories</p>
+                        <h2 class="bsi-h2">Loved across India.</h2>
+                    </div>
+                    <div class="bsi-testimonials" id="bsiTestimonials">
+                        <div t-foreach="testimonials" t-as="t_item" t-attf-class="bsi-testimonial #{t_item_index == 0 and 'bsi-testimonial--active' or ''}">
+                            <img t-att-src="('/web/image/%s' % t_item.bsi_image_ids[0].id) if t_item.bsi_image_ids else (t_item.bsi_avatar_url or 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=120&amp;h=120&amp;fit=crop&amp;auto=format')" t-att-alt="t_item.bsi_client_name" class="bsi-testimonial__avatar"/>
+                            <div class="bsi-testimonial__stars" t-esc="'★' * t_item.bsi_rating"/>
+                            <p class="bsi-testimonial__text">"<t t-esc="t_item.bsi_text"/>"</p>
+                            <div class="bsi-testimonial__name" t-esc="t_item.bsi_client_name"/>
+                            <div class="bsi-testimonial__role" t-esc="t_item.bsi_client_role"/>
+                        </div>
+                    </div>
+                    <div class="bsi-testimonials__dots" id="bsiTestimonialDots">
+                        <button t-foreach="testimonials" t-as="t_item" type="button" t-attf-class="bsi-dot #{t_item_index == 0 and 'bsi-dot--active' or ''}" t-att-data-index="t_item_index"/>
+                    </div>
+                </div>
+            </section>
+        </t>
+    </template>
+
+</odoo>

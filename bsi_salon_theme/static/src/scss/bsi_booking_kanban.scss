@@ -1,0 +1,98 @@
+// ══ Bookings kanban (bsi.salon.booking.request) ══ Scoped entirely under .bsi-booking-kanban
+// (the class on the <kanban> root, see views/bsi_salon_booking_request_views.xml) so none of
+// this leaks into any other model's kanban view across the backend.
+
+.bsi-booking-kanban {
+  .o_kanban_group {
+    .o_column_title {
+      font-family: 'Manrope', system-ui, sans-serif;
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: -0.01em;
+    }
+    .o_kanban_counter_progressbar {
+      height: 6px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+  }
+  .o_kanban_record {
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+}
+
+.bsi-booking-card {
+  --bsi-k-accent: #c7c7c7;
+  background: #fff;
+  border: 1px solid #ececec;
+  border-left: 3px solid var(--bsi-k-accent);
+  border-radius: 10px;
+  padding: 9px 11px 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.bsi-booking-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.09);
+}
+
+.bsi-booking-card--draft { --bsi-k-accent: #f0ad4e; }
+.bsi-booking-card--started, .bsi-booking-card--ended { --bsi-k-accent: #2b8c82; }
+.bsi-booking-card--completed { --bsi-k-accent: #2fb35c; }
+.bsi-booking-card--cancelled { --bsi-k-accent: #ef233c; }
+
+.bsi-booking-card__top {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 6px;
+  .badge { font-size: 9.5px; padding: 2px 6px; }
+}
+.bsi-booking-card__customer { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.bsi-booking-card__avatar {
+  width: 24px; height: 24px; border-radius: 50%; object-fit: cover;
+  background: #f1f1f1; flex-shrink: 0;
+}
+.bsi-booking-card__avatar--placeholder {
+  display: flex; align-items: center; justify-content: center; color: #b5b5b5; font-size: 12px;
+}
+.bsi-booking-card__name {
+  font-weight: 700; font-size: 12.5px; color: #2a2a2a;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.bsi-booking-card__services {
+  display: flex; flex-wrap: wrap; gap: 3px; margin: 6px 0;
+  max-height: 40px; overflow: hidden;
+}
+.bsi-booking-card__services .o_tag {
+  // Deliberately neutral, not red/green/amber/teal — those are already the status accent
+  // colors (left stripe, badges, price), so a service tag in one of those would misread as
+  // a status of its own rather than just "a service on this booking".
+  background: #f1f2f5 !important; color: #5f6b7a !important;
+  border: none !important; border-radius: 999px; font-size: 10px; font-weight: 600;
+  line-height: 1.5; padding: 0 7px;
+}
+.bsi-booking-card__services .o_tag .o_delete,
+.bsi-booking-card__services .o_tag_badge_text { color: inherit; }
+
+.bsi-booking-card__meta {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 11px; color: #8a8a8a; gap: 6px; margin-top: 4px;
+}
+.bsi-booking-card__artist {
+  display: flex; align-items: center; gap: 5px; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.bsi-booking-card__artist-avatar {
+  width: 16px; height: 16px; border-radius: 50%; object-fit: cover;
+  background: #f1f1f1; flex-shrink: 0;
+}
+
+.bsi-booking-card__footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e7e7e7;
+}
+.bsi-booking-card__location { font-size: 11px; color: #8a8a8a; }
+.bsi-booking-card__amount { font-weight: 800; font-size: 13.5px; color: #ef233c; }

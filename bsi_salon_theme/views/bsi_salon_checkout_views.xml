@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Cart, checkout (address) and payment all funnel through this one shared shell, so
+         wrapping it here re-skins all three steps at once without touching any of
+         website_sale's own functional markup (cart lines, address forms, payment form JS all
+         stay stock — only the surrounding chrome and CSS change). The wrapper matches the
+         marketing pages' own ".bsi-salon"/"#bsi-salon-root" shell exactly, so dark mode and the
+         navbar/footer JS (theme toggle, mobile menu, footer "back to top") all work here too. -->
+    <template id="bsi_checkout_layout_inherit" inherit_id="website_sale.checkout_layout" name="Salon Theme: Checkout Layout">
+
+        <xpath expr="//t[@t-call='website.layout']" position="before">
+            <t t-set="head">
+                <t t-call="bsi_salon_theme.bsi_head_assets"/>
+            </t>
+        </xpath>
+
+        <xpath expr="//t[@t-call='website.layout']/t[@t-set='no_footer']" position="after">
+            <t t-set="no_header" t-value="True"/>
+            <t t-set="no_footer" t-value="True"/>
+        </xpath>
+
+        <xpath expr="//div[@id='wrap']" position="replace">
+            <div class="bsi-salon" id="bsi-salon-root">
+                <t t-set="active_page" t-value="'shop'"/>
+                <t t-call="bsi_salon_theme.bsi_navbar"/>
+                <main class="bsi-salon-main bsi-salon-main--checkout">$0</main>
+                <t t-call="bsi_salon_theme.bsi_footer"/>
+            </div>
+        </xpath>
+
+    </template>
+
+</odoo>

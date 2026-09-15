@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══ Chairs ═══ -->
+    <record id="bsi_salon_chair_view_list" model="ir.ui.view">
+        <field name="name">bsi.salon.chair.list</field>
+        <field name="model">bsi.salon.chair</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="not active">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="bsi_location_id"/>
+                <field name="bsi_service_category"/>
+                <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+            </list>
+        </field>
+    </record>
+    <record id="bsi_salon_chair_view_form" model="ir.ui.view">
+        <field name="name">bsi.salon.chair.form</field>
+        <field name="model">bsi.salon.chair</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="bsi_location_id"/>
+                        <field name="bsi_service_category"/>
+                        <field name="sequence"/>
+                        <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="bsi_salon_chair_action" model="ir.actions.act_window">
+        <field name="name">Chairs</field>
+        <field name="res_model">bsi.salon.chair</field>
+        <field name="view_mode">list,form</field>
+        <!-- Chairs disabled here (Active off) are only hidden from the website's chair
+             picker (which already excludes inactive chairs by default) — they should
+             stay visible in this backend list too so staff never lose track of one. -->
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <!-- ═══ Time Slots ═══ -->
+    <record id="bsi_salon_time_slot_view_list" model="ir.ui.view">
+        <field name="name">bsi.salon.time.slot.list</field>
+        <field name="model">bsi.salon.time.slot</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="not active">
+                <field name="name"/>
+                <field name="bsi_start_time" widget="float_time"/>
+                <field name="bsi_end_time" widget="float_time"/>
+                <field name="bsi_today_bookings_count" string="Booked Today"/>
+                <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+            </list>
+        </field>
+    </record>
+    <record id="bsi_salon_time_slot_view_form" model="ir.ui.view">
+        <field name="name">bsi.salon.time.slot.form</field>
+        <field name="model">bsi.salon.time.slot</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(bsi_salon_booking_request_action)d" type="action"
+                                class="oe_stat_button" icon="fa-calendar-check-o"
+                                context="{'search_default_bsi_slot_id': id}">
+                            <field name="bsi_booking_count" widget="statinfo" string="Appointments"/>
+                        </button>
+                    </div>
+                    <group>
+                        <field name="name"/>
+                        <field name="bsi_start_time" widget="float_time"/>
+                        <field name="bsi_end_time" widget="float_time"/>
+                        <field name="bsi_today_bookings_count" string="Booked Today (all branches)"/>
+                        <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+                    </group>
+                    <notebook>
+                        <page string="Appointments" name="bsi_appointments_tab">
+                            <field name="bsi_booking_ids" readonly="1">
+                                <list>
+                                    <field name="bsi_preferred_date"/>
+                                    <field name="bsi_name" string="Customer"/>
+                                    <field name="bsi_artist_id"/>
+                                    <field name="bsi_service_ids" widget="many2many_tags"/>
+                                    <field name="bsi_location_id"/>
+                                    <field name="bsi_state" widget="badge"
+                                           decoration-info="bsi_state == 'draft'"
+                                           decoration-warning="bsi_state in ('started', 'ended')"
+                                           decoration-success="bsi_state == 'completed'"
+                                           decoration-danger="bsi_state == 'cancelled'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="bsi_salon_time_slot_action" model="ir.actions.act_window">
+        <field name="name">Time Slots</field>
+        <field name="res_model">bsi.salon.time.slot</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <!-- ═══ Menu ═══ -->
+    <!-- Nested under Configuration → Booking Setup, before the membership and feedback
+         sections in the Configuration dropdown. -->
+    <menuitem id="bsi_salon_chair_menu" name="Chairs" parent="bsi_salon_booking_setup_menu" action="bsi_salon_chair_action" sequence="10"/>
+    <menuitem id="bsi_salon_time_slot_menu" name="Time Slots" parent="bsi_salon_booking_setup_menu" action="bsi_salon_time_slot_action" sequence="30"/>
+
+</odoo>

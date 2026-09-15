@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══ Services ═══ -->
+    <record id="bsi_salon_service_view_list" model="ir.ui.view">
+        <field name="name">bsi.salon.service.list</field>
+        <field name="model">bsi.salon.service</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="not active">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="bsi_category"/>
+                <field name="bsi_price"/>
+                <field name="bsi_price_amount" sum="Total"/>
+                <field name="bsi_duration"/>
+                <field name="bsi_popular"/>
+                <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+            </list>
+        </field>
+    </record>
+    <record id="bsi_salon_service_view_form" model="ir.ui.view">
+        <field name="name">bsi.salon.service.form</field>
+        <field name="model">bsi.salon.service</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="bsi_category"/>
+                            <field name="bsi_price"/>
+                            <field name="bsi_price_amount"/>
+                            <field name="bsi_duration"/>
+                            <field name="bsi_popular"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+                            <field name="bsi_image_ids" widget="many2many_binary"/>
+                            <field name="bsi_product_id"/>
+                        </group>
+                    </group>
+                    <field name="bsi_description" placeholder="Service description..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="bsi_salon_service_action" model="ir.actions.act_window">
+        <field name="name">Services</field>
+        <field name="res_model">bsi.salon.service</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <!-- ═══ Packages ═══ -->
+    <record id="bsi_salon_package_view_list" model="ir.ui.view">
+        <field name="name">bsi.salon.package.list</field>
+        <field name="model">bsi.salon.package</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="not active">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="bsi_original_price"/>
+                <field name="bsi_bundle_price"/>
+                <field name="bsi_save_label"/>
+                <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+            </list>
+        </field>
+    </record>
+    <record id="bsi_salon_package_view_form" model="ir.ui.view">
+        <field name="name">bsi.salon.package.form</field>
+        <field name="model">bsi.salon.package</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(bsi_salon_booking_request_action)d" type="action"
+                                class="oe_stat_button" icon="fa-calendar-check-o"
+                                context="{'search_default_bsi_package_id': id}">
+                            <field name="bsi_booking_count" widget="statinfo" string="Appointments"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="bsi_original_price"/>
+                            <field name="bsi_bundle_price"/>
+                            <field name="bsi_bundle_price_amount"/>
+                            <field name="bsi_save_label"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+                            <field name="bsi_image_ids" widget="many2many_binary"/>
+                        </group>
+                    </group>
+                    <field name="bsi_service_ids" widget="many2many_tags"/>
+                    <field name="bsi_description" placeholder="Package description..."/>
+                    <field name="bsi_includes" placeholder="One included item per line..."/>
+                    <notebook>
+                        <page string="Appointments" name="bsi_appointments_tab">
+                            <field name="bsi_booking_ids" readonly="1">
+                                <list>
+                                    <field name="bsi_preferred_date"/>
+                                    <field name="bsi_name" string="Customer"/>
+                                    <field name="bsi_artist_id"/>
+                                    <field name="bsi_location_id"/>
+                                    <field name="bsi_state" widget="badge"
+                                           decoration-info="bsi_state == 'draft'"
+                                           decoration-warning="bsi_state in ('started', 'ended')"
+                                           decoration-success="bsi_state == 'completed'"
+                                           decoration-danger="bsi_state == 'cancelled'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="bsi_salon_package_action" model="ir.actions.act_window">
+        <field name="name">Packages</field>
+        <field name="res_model">bsi.salon.package</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <!-- ═══ Memberships ═══ -->
+    <record id="bsi_salon_membership_view_list" model="ir.ui.view">
+        <field name="name">bsi.salon.membership.list</field>
+        <field name="model">bsi.salon.membership</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="not active">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="bsi_tagline"/>
+                <field name="bsi_price_monthly"/>
+                <field name="bsi_price_yearly"/>
+                <field name="bsi_discount_percent"/>
+                <field name="bsi_featured"/>
+                <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+            </list>
+        </field>
+    </record>
+    <record id="bsi_salon_membership_view_form" model="ir.ui.view">
+        <field name="name">bsi.salon.membership.form</field>
+        <field name="model">bsi.salon.membership</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="bsi_tagline"/>
+                            <field name="bsi_cta_label"/>
+                            <field name="bsi_featured"/>
+                            <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+                        </group>
+                        <group>
+                            <field name="bsi_price_monthly"/>
+                            <field name="bsi_price_yearly"/>
+                            <field name="bsi_discount_percent"/>
+                            <field name="sequence"/>
+                        </group>
+                    </group>
+                    <field name="bsi_perks" placeholder="One perk per line..."/>
+                    <group string="Linked Products">
+                        <field name="bsi_product_monthly_id"/>
+                        <field name="bsi_product_yearly_id"/>
+                    </group>
+                    <notebook>
+                        <page string="Active Users" name="bsi_subscriptions">
+                            <field name="bsi_subscription_ids" readonly="1">
+                                <list>
+                                    <field name="bsi_partner_id"/>
+                                    <field name="bsi_billing_period"/>
+                                    <field name="bsi_start_date"/>
+                                    <field name="bsi_end_date"/>
+                                    <field name="bsi_state" widget="badge"
+                                           decoration-success="bsi_state == 'active'"
+                                           decoration-danger="bsi_state == 'expired'"
+                                           decoration-muted="bsi_state == 'cancelled'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="bsi_salon_membership_action" model="ir.actions.act_window">
+        <field name="name">Memberships</field>
+        <field name="res_model">bsi.salon.membership</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <!-- ═══ Locations ═══ -->
+    <record id="bsi_salon_location_view_list" model="ir.ui.view">
+        <field name="name">bsi.salon.location.list</field>
+        <field name="model">bsi.salon.location</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="not active">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="bsi_city"/>
+                <field name="bsi_address"/>
+                <field name="bsi_team_count"/>
+                <field name="bsi_flagship"/>
+                <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+            </list>
+        </field>
+    </record>
+    <record id="bsi_salon_location_view_form" model="ir.ui.view">
+        <field name="name">bsi.salon.location.form</field>
+        <field name="model">bsi.salon.location</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(bsi_salon_booking_request_action)d" type="action"
+                                class="oe_stat_button" icon="fa-calendar-check-o"
+                                context="{'search_default_bsi_location_id': id}">
+                            <field name="bsi_booking_count" widget="statinfo" string="Appointments"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="bsi_city"/>
+                            <field name="bsi_address"/>
+                            <field name="bsi_phone"/>
+                            <field name="bsi_email"/>
+                            <field name="bsi_team_count"/>
+                            <field name="bsi_flagship"/>
+                            <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+                        </group>
+                        <group>
+                            <field name="bsi_hours_weekdays"/>
+                            <field name="bsi_hours_saturday"/>
+                            <field name="bsi_hours_sunday"/>
+                            <field name="bsi_service_ids" widget="many2many_tags"/>
+                            <field name="bsi_latitude"/>
+                            <field name="bsi_longitude"/>
+                            <field name="sequence"/>
+                        </group>
+                    </group>
+                    <field name="bsi_image_ids" widget="many2many_binary"/>
+                    <notebook>
+                        <page string="Appointments" name="bsi_appointments_tab">
+                            <field name="bsi_booking_ids" readonly="1">
+                                <list>
+                                    <field name="bsi_preferred_date"/>
+                                    <field name="bsi_name" string="Customer"/>
+                                    <field name="bsi_artist_id"/>
+                                    <field name="bsi_service_ids" widget="many2many_tags"/>
+                                    <field name="bsi_state" widget="badge"
+                                           decoration-info="bsi_state == 'draft'"
+                                           decoration-warning="bsi_state in ('started', 'ended')"
+                                           decoration-success="bsi_state == 'completed'"
+                                           decoration-danger="bsi_state == 'cancelled'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="bsi_salon_location_action" model="ir.actions.act_window">
+        <field name="name">Locations</field>
+        <field name="res_model">bsi.salon.location</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <!-- ═══ Team Members ═══ -->
+    <record id="bsi_salon_team_member_view_list" model="ir.ui.view">
+        <field name="name">bsi.salon.team.member.list</field>
+        <field name="model">bsi.salon.team.member</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="not active">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="bsi_role"/>
+                <field name="bsi_specialty"/>
+                <field name="bsi_since_year"/>
+                <field name="bsi_location_id"/>
+                <field name="bsi_charge_amount"/>
+                <field name="bsi_is_available_now" widget="boolean_toggle" string="Available Now" readonly="1"/>
+                <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+            </list>
+        </field>
+    </record>
+    <record id="bsi_salon_team_member_view_form" model="ir.ui.view">
+        <field name="name">bsi.salon.team.member.form</field>
+        <field name="model">bsi.salon.team.member</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Booked" bg_color="text-bg-warning" invisible="bsi_is_available_now"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(bsi_salon_booking_request_action)d" type="action"
+                                class="oe_stat_button" icon="fa-calendar-check-o"
+                                context="{'search_default_bsi_artist_id': id}">
+                            <field name="bsi_booking_count" widget="statinfo" string="Appointments"/>
+                        </button>
+                    </div>
+                    <field name="bsi_image" widget="image" class="oe_avatar"/>
+                    <group>
+                        <field name="name"/>
+                        <field name="bsi_role"/>
+                        <field name="bsi_specialty"/>
+                        <field name="bsi_since_year"/>
+                        <field name="bsi_location_id"/>
+                        <field name="bsi_charge_amount"/>
+                        <field name="bsi_is_available_now" string="Available Now" readonly="1"/>
+                        <field name="sequence"/>
+                        <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+                    </group>
+                    <notebook>
+                        <page string="Appointments" name="bsi_appointments_tab">
+                            <field name="bsi_booking_ids" readonly="1">
+                                <list>
+                                    <field name="bsi_preferred_date"/>
+                                    <field name="bsi_name" string="Customer"/>
+                                    <field name="bsi_service_ids" widget="many2many_tags"/>
+                                    <field name="bsi_location_id"/>
+                                    <field name="bsi_state" widget="badge"
+                                           decoration-info="bsi_state == 'draft'"
+                                           decoration-warning="bsi_state in ('started', 'ended')"
+                                           decoration-success="bsi_state == 'completed'"
+                                           decoration-danger="bsi_state == 'cancelled'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="bsi_salon_team_member_view_search" model="ir.ui.view">
+        <field name="name">bsi.salon.team.member.search</field>
+        <field name="model">bsi.salon.team.member</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="bsi_role"/>
+                <field name="bsi_specialty"/>
+                <field name="bsi_location_id"/>
+                <!-- Used by the Salon Dashboard's "Available Staff" KPI card
+                     (search_default_bsi_filter_available_now in its action's context, see
+                     bsi_salon_dashboard_kpi_actions.xml) so clicking it shows a visible,
+                     removable "Available Now" chip instead of a silent base domain. -->
+                <filter string="Available Now" name="bsi_filter_available_now" domain="[('bsi_is_available_now', '=', True)]"/>
+                <group>
+                    <filter string="Base Branch" name="bsi_group_location" context="{'group_by': 'bsi_location_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="bsi_salon_team_member_action" model="ir.actions.act_window">
+        <field name="name">Team Members</field>
+        <field name="res_model">bsi.salon.team.member</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <!-- ═══ Testimonials ═══ -->
+    <record id="bsi_salon_testimonial_view_list" model="ir.ui.view">
+        <field name="name">bsi.salon.testimonial.list</field>
+        <field name="model">bsi.salon.testimonial</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="not active">
+                <field name="sequence" widget="handle"/>
+                <field name="bsi_client_name"/>
+                <field name="bsi_client_role"/>
+                <field name="bsi_rating"/>
+                <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+            </list>
+        </field>
+    </record>
+    <record id="bsi_salon_testimonial_view_form" model="ir.ui.view">
+        <field name="name">bsi.salon.testimonial.form</field>
+        <field name="model">bsi.salon.testimonial</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="bsi_client_name"/>
+                        <field name="bsi_client_role"/>
+                        <field name="bsi_rating"/>
+                        <field name="sequence"/>
+                        <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+                        <field name="bsi_image_ids" widget="many2many_binary"/>
+                    </group>
+                    <field name="bsi_text" placeholder="Testimonial text..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="bsi_salon_testimonial_action" model="ir.actions.act_window">
+        <field name="name">Testimonials</field>
+        <field name="res_model">bsi.salon.testimonial</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <!-- ═══ Awards ═══ -->
+    <record id="bsi_salon_award_view_list" model="ir.ui.view">
+        <field name="name">bsi.salon.award.list</field>
+        <field name="model">bsi.salon.award</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="not active">
+                <field name="sequence" widget="handle"/>
+                <field name="bsi_year"/>
+                <field name="name"/>
+                <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+            </list>
+        </field>
+    </record>
+    <record id="bsi_salon_award_view_form" model="ir.ui.view">
+        <field name="name">bsi.salon.award.form</field>
+        <field name="model">bsi.salon.award</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="bsi_year"/>
+                        <field name="name"/>
+                        <field name="sequence"/>
+                        <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="bsi_salon_award_action" model="ir.actions.act_window">
+        <field name="name">Awards</field>
+        <field name="res_model">bsi.salon.award</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <!-- ═══ Values (About page principles) ═══ -->
+    <record id="bsi_salon_value_view_list" model="ir.ui.view">
+        <field name="name">bsi.salon.value.list</field>
+        <field name="model">bsi.salon.value</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="not active">
+                <field name="sequence" widget="handle"/>
+                <field name="bsi_icon"/>
+                <field name="name"/>
+                <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+            </list>
+        </field>
+    </record>
+    <record id="bsi_salon_value_view_form" model="ir.ui.view">
+        <field name="name">bsi.salon.value.form</field>
+        <field name="model">bsi.salon.value</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="bsi_icon"/>
+                        <field name="sequence"/>
+                        <field name="active" widget="boolean_toggle" string="Shown on Website"/>
+                    </group>
+                    <field name="bsi_description" placeholder="Value description..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="bsi_salon_value_action" model="ir.actions.act_window">
+        <field name="name">About: Values</field>
+        <field name="res_model">bsi.salon.value</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <!-- ═══ About Us page content ═══ -->
+    <record id="bsi_salon_about_content_view_list" model="ir.ui.view">
+        <field name="name">bsi.salon.about.content.list</field>
+        <field name="model">bsi.salon.about.content</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="bsi_hero_title_line1"/>
+                <field name="bsi_hero_title_line2"/>
+            </list>
+        </field>
+    </record>
+    <record id="bsi_salon_about_content_view_form" model="ir.ui.view">
+        <field name="name">bsi.salon.about.content.form</field>
+        <field name="model">bsi.salon.about.content</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="bsi_hero_eyebrow"/>
+                        <field name="bsi_hero_title_line1"/>
+                        <field name="bsi_hero_title_line2"/>
+                        <field name="bsi_badge_value"/>
+                        <field name="bsi_badge_label"/>
+                        <field name="bsi_image_ids" widget="many2many_binary"/>
+                    </group>
+                    <field name="bsi_story_paragraph_1" placeholder="First story paragraph..."/>
+                    <field name="bsi_story_paragraph_2" placeholder="Second story paragraph..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="bsi_salon_about_content_action" model="ir.actions.act_window">
+        <field name="name">About Us Content</field>
+        <field name="res_model">bsi.salon.about.content</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ═══ Menu ═══ -->
+    <!-- Sidebar shows this under the "Settings" icon/label (see dashboard.py
+         _SIDEBAR_LABELS) — its own name stays "Configuration" here. -->
+    <menuitem id="bsi_salon_content_menu" name="Configuration" parent="bsi_salon_theme_root_menu" sequence="6"/>
+    <!-- Keep the staff/booking controls first in Configuration.  Chairs and team members
+         are configured together because a chair is assigned as part of a team booking. -->
+    <menuitem id="bsi_salon_booking_setup_menu" name="Booking Setup" parent="bsi_salon_content_menu" sequence="10"/>
+    <!-- Groups the tiers menu with the subscriptions menu (added in
+         bsi_salon_membership_subscription_views.xml, which loads after this file). -->
+    <menuitem id="bsi_salon_membership_group_menu" name="Membership" parent="bsi_salon_content_menu" sequence="20"/>
+    <menuitem id="bsi_salon_service_catalog_menu" name="Service Catalog" parent="bsi_salon_content_menu" sequence="40"/>
+    <menuitem id="bsi_salon_customer_management_menu" name="Customer Management" parent="bsi_salon_content_menu" sequence="50"/>
+    <menuitem id="bsi_salon_website_content_menu" name="Website Content" parent="bsi_salon_content_menu" sequence="60"/>
+    <menuitem id="bsi_salon_sales_finance_menu" name="Sales &amp; Payments" parent="bsi_salon_content_menu" sequence="70"/>
+    <menuitem id="bsi_salon_service_menu" name="Services" parent="bsi_salon_service_catalog_menu" action="bsi_salon_service_action" sequence="10"/>
+    <menuitem id="bsi_salon_package_menu" name="Packages" parent="bsi_salon_service_catalog_menu" action="bsi_salon_package_action" sequence="20"/>
+    <menuitem id="bsi_salon_membership_menu" name="Memberships" parent="bsi_salon_membership_group_menu" action="bsi_salon_membership_action" sequence="10"/>
+    <menuitem id="bsi_salon_location_menu" name="Locations" parent="bsi_salon_booking_setup_menu" action="bsi_salon_location_action" sequence="40"/>
+    <menuitem id="bsi_salon_team_member_menu" name="Team Members" parent="bsi_salon_booking_setup_menu" action="bsi_salon_team_member_action" sequence="20"/>
+    <menuitem id="bsi_salon_testimonial_menu" name="Testimonials" parent="bsi_salon_website_content_menu" action="bsi_salon_testimonial_action" sequence="10"/>
+    <menuitem id="bsi_salon_award_menu" name="Awards" parent="bsi_salon_website_content_menu" action="bsi_salon_award_action" sequence="20"/>
+    <menuitem id="bsi_salon_value_menu" name="About: Values" parent="bsi_salon_website_content_menu" action="bsi_salon_value_action" sequence="30"/>
+    <menuitem id="bsi_salon_about_content_menu" name="About: Page Content" parent="bsi_salon_website_content_menu" action="bsi_salon_about_content_action" sequence="40"/>
+
+</odoo>

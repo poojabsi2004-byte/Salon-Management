@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="bsi_page_offers" name="Salon Theme: Offers">
+        <t t-call="bsi_salon_theme.bsi_layout">
+            <t t-set="cat_labels" t-value="{'hair': 'Hair', 'colour': 'Colour', 'nails': 'Nails', 'skin': 'Skin', 'body': 'Body', 'bridal': 'Bridal'}"/>
+
+            <!-- Hero -->
+            <section class="bsi-container bsi-page-hero bsi-section--bordered-bottom bsi-reveal">
+                <p class="bsi-eyebrow">Services &amp; Pricing</p>
+                <div class="bsi-page-hero__row">
+                    <h1 class="bsi-h1">Every service,<br/><em>perfected.</em></h1>
+                    <p class="bsi-page-hero__sub">From a quick blowout to a full bridal transformation — browse the complete menu and book instantly.</p>
+                </div>
+            </section>
+
+            
+            <!-- Filters -->
+            <div class="bsi-filter-bar" id="bsiFilterBar">
+                <div class="bsi-container bsi-filter-bar__inner">
+                    <button type="button" class="bsi-filter-btn bsi-filter-btn--active" data-cat="all">All</button>
+                    <t t-foreach="['hair', 'colour', 'nails', 'skin', 'body', 'bridal']" t-as="c">
+                        <button type="button" class="bsi-filter-btn" t-att-data-cat="c" t-esc="cat_labels[c]"/>
+                    </t>
+                    <span class="bsi-filter-bar__count" id="bsiFilterCount"><t t-esc="len(services)"/> services</span>
+                </div>
+            </div>
+
+            <!-- Grid -->
+            <div class="bsi-container bsi-section">
+                <div class="bsi-grid-3" id="bsiServiceGrid">
+                    <div t-foreach="services" t-as="s" t-att-data-cat="s.bsi_category" class="bsi-card bsi-card--hover bsi-offer-card bsi-reveal">
+                        <div t-if="s.bsi_popular" class="bsi-offer-card__badge">Popular</div>
+                        <div class="bsi-offer-card__body">
+                            <h3 t-esc="s.name"/>
+                            <p t-esc="s.bsi_description"/>
+                            <div class="bsi-offer-card__footer">
+                                <div>
+                                    <div class="bsi-offer-card__price" t-esc="s.bsi_price"/>
+                                    <div class="bsi-offer-card__duration" t-esc="s.bsi_duration"/>
+                                </div>
+                                <a href="/salon/booking" class="bsi-pill-btn">Book</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seasonal offer: a photo-backed banner instead of a flat text
+                 strip, so the page doesn't close on the same card shape it
+                 opened the grid with. -->
+            <div class="bsi-container bsi-section bsi-section--top-pad-0">
+                <div class="bsi-seasonal bsi-seasonal--photo bsi-reveal">
+                    <div class="bsi-seasonal__bg" aria-hidden="true">
+                        <img src="https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=1200&amp;h=700&amp;fit=crop&amp;auto=format&amp;q=80" alt=""/>
+                    </div>
+                    <div class="bsi-seasonal__scrim" aria-hidden="true"/>
+                    <div class="bsi-seasonal__copy">
+                        <span class="bsi-tag-accent">Festive Special</span>
+                        <h3 class="bsi-h3">Book any colour service<br/>and get a free hair spa.</h3>
+                    </div>
+                    <a href="/salon/booking" class="bsi-btn bsi-btn--inverse bsi-magnetic">Book the Offer</a>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

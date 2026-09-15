@@ -1,0 +1,858 @@
+// Salon Management Dashboard — rendered by controllers/dashboard.py and shown inside an
+// iframe by the "Dashboard" menu's client action (see bsi_salon_dashboard_client_action.js),
+// so Odoo's own top bar/app-switcher/breadcrumb stay visible above it.
+// Palette: an off-white content area (or near-black, in dark mode — see
+// html[data-theme="dark"] below) + a solid "heart red" sidebar (the same
+// #ef233c bsi_backend_theme.scss recolors Odoo's own primary color to) + a full gray scale.
+// Dark mode only ever swaps the neutral tokens (bg/card/border/fg/muted/gray-*) — the brand
+// colors (accent/red/amber/teal/green) are identical in both themes, by design.
+:root {
+  --dash-red: #ef233c;
+  --dash-red-dark: #d90429;
+  --dash-red-soft: rgba(239, 35, 60, 0.12);
+
+  --dash-black: #0b0b0d;
+  --dash-black-2: #16161a;
+  --dash-white: #ffffff;
+
+  --dash-gray-50: #f7f7f8;
+  --dash-gray-100: #eeeef0;
+  --dash-gray-200: #e2e2e6;
+  --dash-gray-400: #b4b4bc;
+  --dash-gray-500: #8b8b93;
+  --dash-gray-700: #4b4b52;
+  --dash-gray-900: #1c1c1f;
+
+  --dash-bg: #f8f6f3;
+  --dash-fg: var(--dash-black);
+  --dash-muted: var(--dash-gray-500);
+  --dash-card: var(--dash-white);
+  --dash-card-glass: rgba(255, 255, 255, 0.7);
+  --dash-border: var(--dash-gray-200);
+
+  --dash-accent: var(--dash-red);
+  --dash-accent-2: var(--dash-red-dark);
+  --dash-accent-soft: var(--dash-red-soft);
+  --dash-amber: #c8842b;
+  --dash-amber-soft: rgba(200, 132, 43, 0.14);
+  --dash-teal: #2b8c82;
+  --dash-teal-soft: rgba(43, 140, 130, 0.14);
+  --dash-green: #2fb35c;
+  --dash-green-soft: rgba(47, 179, 92, 0.14);
+
+  --dash-radius-sm: 10px;
+  --dash-radius-md: 16px;
+  --dash-radius-lg: 20px;
+  --dash-radius-pill: 999px;
+
+  --dash-shadow: 0 2px 10px rgba(11, 11, 13, 0.05);
+  --dash-shadow-hover: 0 16px 36px rgba(11, 11, 13, 0.1);
+  --dash-ease: cubic-bezier(.22, 1, .36, 1);
+  --dash-speed-fast: 180ms;
+  --dash-speed: 260ms;
+  --dash-speed-slow: 420ms;
+
+  --dash-sidebar-w: 76px;
+  --dash-sidebar-w-open: 248px;
+}
+
+// ── Dark mode — toggled by the sidebar's Light/Dark button (see initTheme in
+// bsi_salon_dashboard.js, which sets this attribute on <html> — not <body>, so the
+// pre-first-paint inline script in the template's <head> can apply a remembered choice
+// before <body> even exists — and remembers the choice in localStorage). Only the neutral
+// surface tokens change; --dash-accent/red/amber/teal/green stay exactly the same in both
+// themes on purpose. ──
+html[data-theme="dark"] body.bsi-dash-body {
+  // --dash-black/--dash-white deliberately NOT touched here — they're used for fixed-purpose
+  // accents (the sidebar's own always-dark gradient, a couple of always-black/white chips
+  // and tooltips elsewhere) that aren't meant to invert with the content theme.
+  --dash-gray-50: #1c1815;
+  --dash-gray-100: #231e1a;
+  --dash-gray-200: #2f2925;
+  --dash-gray-400: #5c534c;
+  --dash-gray-500: #a89b8e;
+  --dash-gray-700: #d8cfc6;
+  --dash-gray-900: #f2ece6;
+
+  --dash-bg: #14100f;
+  --dash-fg: #f2ece6;
+  --dash-muted: var(--dash-gray-500);
+  --dash-card: #1e1a17;
+  --dash-card-glass: rgba(30, 26, 23, 0.7);
+  --dash-border: var(--dash-gray-200);
+
+  --dash-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  --dash-shadow-hover: 0 16px 36px rgba(0, 0, 0, 0.45);
+}
+
+* { box-sizing: border-box; }
+
+html, body.bsi-dash-body { margin: 0; height: 100%; }
+body.bsi-dash-body {
+  background: var(--dash-bg);
+  color: var(--dash-fg);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  overflow-x: hidden;
+  transition: background-color var(--dash-speed) ease, color var(--dash-speed) ease;
+}
+
+// ── Shell: solid red icon-rail sidebar (expands on hover) + off-white main content ────────
+.bsi-dash-shell { display: flex; min-height: 100%; position: relative; }
+
+// The sidebar is now a themed neutral surface (white in light mode, near-black in dark —
+// same tokens as the rest of the content area) rather than a fixed red rail: red is used
+// deliberately, as the one accent that stands out against it (active item, logo mark, plan
+// card highlights), instead of being the background everything else sits on top of.
+.bsi-dash-sidebar {
+  width: var(--dash-sidebar-w-open);
+  flex-shrink: 0;
+  background: var(--dash-card);
+  border-right: 1px solid var(--dash-border);
+  color: var(--dash-fg);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 20px 14px;
+  overflow: hidden;
+  z-index: 40;
+  box-shadow: var(--dash-shadow);
+  transition: width var(--dash-speed) var(--dash-ease), background var(--dash-speed) ease, border-color var(--dash-speed) ease;
+}
+// Collapse/expand is an explicit click on the arrow button (see initSidebarCollapse in
+// bsi_salon_dashboard.js), not a hover reflex — expanded is the default/remembered state
+// (localStorage), .is-collapsed is the exception, and the mobile drawer (.is-mobile-open,
+// toggled by the header burger) is a separate slide-in-over-content mechanism entirely (see
+// the max-width: 768px block below) that always shows the full expanded width regardless.
+.bsi-dash-sidebar.is-collapsed { width: var(--dash-sidebar-w); }
+
+.bsi-dash-sidebar__brand { display: flex; align-items: center; gap: 12px; padding: 4px 2px 22px; color: var(--dash-fg); }
+.bsi-dash-sidebar__brand-mark {
+  width: 34px; height: 34px; border-radius: 11px;
+  background: linear-gradient(155deg, var(--dash-accent), var(--dash-accent-2));
+  color: var(--dash-white);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0; box-shadow: 0 4px 14px var(--dash-accent-soft), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  animation: bsi-brand-snip 4s ease-in-out infinite;
+}
+@keyframes bsi-brand-snip {
+  0%, 92%, 100% { transform: rotate(0deg); }
+  95% { transform: rotate(-12deg); }
+  98% { transform: rotate(8deg); }
+}
+.bsi-dash-sidebar__brand-text {
+  display: flex; flex-direction: column; white-space: nowrap;
+  opacity: 1; max-width: 200px; overflow: hidden;
+  transition: opacity var(--dash-speed-fast) ease, max-width var(--dash-speed) var(--dash-ease);
+}
+.bsi-dash-sidebar.is-collapsed .bsi-dash-sidebar__brand-text { opacity: 0; max-width: 0; }
+.bsi-dash-sidebar__brand-name { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+.bsi-dash-sidebar__brand-sub { font-size: 11px; color: var(--dash-muted); }
+
+.bsi-dash-nav { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+// Staggered fade+slide entrance on first load, one nav item at a time — purely cosmetic,
+// a fixed :nth-child list is fine since the sidebar's own item count never changes at runtime.
+.bsi-dash-nav > li {
+  opacity: 0;
+  animation: bsi-nav-item-in var(--dash-speed-slow) var(--dash-ease) forwards;
+}
+.bsi-dash-nav > li:nth-child(1) { animation-delay: 0.05s; }
+.bsi-dash-nav > li:nth-child(2) { animation-delay: 0.10s; }
+.bsi-dash-nav > li:nth-child(3) { animation-delay: 0.15s; }
+.bsi-dash-nav > li:nth-child(4) { animation-delay: 0.20s; }
+.bsi-dash-nav > li:nth-child(5) { animation-delay: 0.25s; }
+.bsi-dash-nav > li:nth-child(6) { animation-delay: 0.30s; }
+.bsi-dash-nav > li:nth-child(7) { animation-delay: 0.35s; }
+.bsi-dash-nav > li:nth-child(8) { animation-delay: 0.40s; }
+@keyframes bsi-nav-item-in {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.bsi-dash-nav__link {
+  display: flex; align-items: center;
+  padding: 10px; border-radius: var(--dash-radius-sm);
+  color: var(--dash-muted); text-decoration: none; font-size: 13.5px; font-weight: 500;
+  white-space: nowrap; position: relative;
+  transition: background var(--dash-speed-fast) var(--dash-ease), color var(--dash-speed-fast) var(--dash-ease),
+              transform var(--dash-speed-fast) var(--dash-ease);
+}
+.bsi-dash-nav__link:hover { background: var(--dash-gray-100); color: var(--dash-fg); transform: translateX(2px); }
+.bsi-dash-nav__link.is-active {
+  background: linear-gradient(155deg, var(--dash-accent), var(--dash-accent-2));
+  color: var(--dash-white);
+  box-shadow: 0 6px 18px var(--dash-accent-soft);
+  cursor: default;
+}
+.bsi-dash-nav__icon {
+  width: 18px; height: 18px; flex-shrink: 0; display: flex;
+  transition: transform var(--dash-speed-fast) ease;
+}
+.bsi-dash-nav__icon svg { width: 100%; height: 100%; }
+.bsi-dash-nav__link:hover .bsi-dash-nav__icon { transform: scale(1.1); }
+.bsi-dash-nav__label {
+  margin-left: 12px; max-width: 160px; overflow: hidden; opacity: 1;
+  transition: opacity var(--dash-speed-fast) ease, max-width var(--dash-speed) var(--dash-ease), margin-left var(--dash-speed) var(--dash-ease);
+}
+.bsi-dash-sidebar.is-collapsed .bsi-dash-nav__label { opacity: 0; max-width: 0; margin-left: 0; }
+.bsi-dash-sidebar__collapse-hint {
+  border: none; background: var(--dash-gray-100); color: var(--dash-muted);
+  width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform var(--dash-speed) var(--dash-ease), background var(--dash-speed-fast) ease; flex-shrink: 0;
+}
+.bsi-dash-sidebar__collapse-hint:hover { background: var(--dash-gray-200); }
+// Default (expanded) points left ("collapse me"); .is-collapsed flips it to point right
+// ("expand me") — the arrow SVG itself is drawn pointing right, so only the collapsed state
+// needs no rotation.
+.bsi-dash-sidebar__collapse-hint { transform: rotate(180deg); }
+.bsi-dash-sidebar.is-collapsed .bsi-dash-sidebar__collapse-hint { transform: rotate(0deg); }
+
+// ── Sidebar-bottom plan card — a small badge when collapsed, a full promo card (name,
+// tagline, price, CTA) once the sidebar expands, same fade/slide timing as the nav labels.
+// Deliberately given a soft red tint (unlike the plain nav rows) so it still reads as the
+// one "featured" callout in an otherwise neutral sidebar. ──
+.bsi-dash-sidebar__plan { margin-top: 14px; flex-shrink: 0; }
+.bsi-dash-sidebar__plan-inner {
+  display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--dash-fg);
+  background: var(--dash-accent-soft); border-radius: var(--dash-radius-md); padding: 10px;
+  border: 1px solid var(--dash-accent-soft);
+  transition: background var(--dash-speed-fast) ease, transform var(--dash-speed-fast) ease;
+}
+.bsi-dash-sidebar__plan-inner:hover { background: var(--dash-accent-soft); border-color: var(--dash-accent); transform: translateY(-1px); }
+.bsi-dash-sidebar__plan-icon {
+  width: 30px; height: 30px; border-radius: 50%; background: var(--dash-accent);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--dash-white);
+  animation: bsi-plan-glow 2.4s ease-in-out infinite;
+}
+@keyframes bsi-plan-glow {
+  0%, 100% { box-shadow: 0 0 0 0 var(--dash-accent-soft); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+.bsi-dash-sidebar__plan-body {
+  display: flex; flex-direction: column; gap: 2px; white-space: nowrap; overflow: hidden;
+  opacity: 1; max-width: 170px;
+  transition: opacity var(--dash-speed-fast) ease, max-width var(--dash-speed) var(--dash-ease);
+}
+.bsi-dash-sidebar.is-collapsed .bsi-dash-sidebar__plan-body { opacity: 0; max-width: 0; }
+.bsi-dash-sidebar__plan-name { font-size: 12.5px; font-weight: 800; color: var(--dash-fg); }
+.bsi-dash-sidebar__plan-tagline { font-size: 10.5px; color: var(--dash-muted); }
+.bsi-dash-sidebar__plan-price { font-size: 12px; font-weight: 700; color: var(--dash-accent); }
+.bsi-dash-sidebar__plan-price small { font-weight: 500; color: var(--dash-muted); }
+.bsi-dash-sidebar__plan-cta {
+  align-self: flex-start; margin-top: 2px; font-size: 10.5px; font-weight: 800;
+  background: var(--dash-accent); color: var(--dash-white); border-radius: var(--dash-radius-pill);
+  padding: 3px 9px;
+}
+
+// ── Light/Dark toggle — sits right below the nav, above the membership plan card; same
+// icon+label shape as a nav link so it reads as part of the same list, just its own control.
+.bsi-dash-sidebar__theme-toggle {
+  display: flex; align-items: center; gap: 12px; width: 100%; flex-shrink: 0;
+  border: none; background: transparent; color: var(--dash-muted);
+  padding: 10px; border-radius: var(--dash-radius-sm); cursor: pointer; margin-top: 8px;
+  font-size: 13.5px; font-weight: 500; text-align: left;
+  transition: background var(--dash-speed-fast) ease, color var(--dash-speed-fast) ease;
+}
+.bsi-dash-sidebar__theme-toggle:hover { background: var(--dash-gray-100); color: var(--dash-fg); }
+.bsi-dash-sidebar__theme-icon { width: 18px; flex-shrink: 0; text-align: center; font-size: 14px; }
+.bsi-dash-sidebar__theme-label {
+  white-space: nowrap; overflow: hidden; max-width: 160px; opacity: 1;
+  transition: opacity var(--dash-speed-fast) ease, max-width var(--dash-speed) var(--dash-ease);
+}
+.bsi-dash-sidebar.is-collapsed .bsi-dash-sidebar__theme-label { opacity: 0; max-width: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bsi-dash-sidebar__brand-mark,
+  .bsi-dash-sidebar__plan-icon,
+  .bsi-dash-nav > li { animation: none; opacity: 1; }
+}
+
+.bsi-dash-scrim {
+  display: none; position: fixed; inset: 0; background: rgba(11, 11, 13, 0.45); z-index: 35;
+  opacity: 0; transition: opacity var(--dash-speed) ease;
+}
+.bsi-dash-scrim.is-visible { display: block; opacity: 1; }
+
+// ── Custom animated cursor: a glowing dot + trailing ring follow the real pointer (position
+// can only be tracked via JS), and little symbols spawn and drift away as it moves — see
+// initCursorTrail in bsi_salon_dashboard.js, ported from the reference CursorTrail design
+// with the same behavior but this dashboard's own red/amber/teal palette instead of its tans.
+// Hidden over text fields (native caret stays usable) and disabled on touch devices.
+body.bsi-dash-body { cursor: none; }
+body.bsi-dash-body input,
+body.bsi-dash-body textarea,
+body.bsi-dash-body select { cursor: auto; }
+
+.bsi-dash-cursor__dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--dash-accent);
+  box-shadow: 0 0 12px var(--dash-accent), 0 0 24px var(--dash-accent);
+  mix-blend-mode: difference;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.2s ease;
+}
+.bsi-dash-cursor__dot.is-visible { opacity: 0.9; }
+.bsi-dash-cursor__ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--dash-accent);
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.15s ease, left 0.1s ease-out, top 0.1s ease-out;
+}
+.bsi-dash-cursor__ring.is-visible { opacity: 0.4; }
+
+.bsi-dash-cursor-particles { position: fixed; inset: 0; pointer-events: none; z-index: 9998; overflow: hidden; }
+.bsi-dash-cursor-particle {
+  position: fixed;
+  top: 0;
+  left: 0;
+  font-weight: 700;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+}
+
+@media (hover: none) {
+  // Touch devices have no real pointer to follow — keep the native tap behavior untouched.
+  body.bsi-dash-body { cursor: auto; }
+  .bsi-dash-cursor__dot, .bsi-dash-cursor__ring, .bsi-dash-cursor-particles { display: none; }
+}
+
+// ── Decorative corner sticker — sits behind the mascot button (lower z-index), fades a
+// little further in dark mode (dark backgrounds already read "busier" at the same opacity).
+.bsi-dash-sticker {
+  position: fixed;
+  right: 6px;
+  bottom: 6px;
+  width: 220px;
+  height: 220px;
+  z-index: 15;
+  pointer-events: none;
+  opacity: 0.25;
+  filter: drop-shadow(0 4px 24px var(--dash-accent-soft));
+}
+html[data-theme="dark"] .bsi-dash-sticker { opacity: 0.15; }
+@media (max-width: 768px) {
+  .bsi-dash-sticker { width: 140px; height: 140px; }
+}
+
+// ── Floating mascot: a pair of scissor blades that pivot around the shared center of the
+// viewBox (12,12 of a 24x24 box) in opposite phase, reading as a continuous snip — purely
+// decorative (pointer-events: none), so it never intercepts clicks on whatever's beneath it. ──
+.bsi-dash-mascot {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: linear-gradient(155deg, var(--dash-red), var(--dash-red-dark));
+  color: var(--dash-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--dash-shadow-hover);
+  z-index: 30;
+  cursor: pointer;
+  animation: bsi-mascot-bob 3.2s var(--dash-ease) infinite;
+  transition: box-shadow var(--dash-speed-fast) var(--dash-ease);
+}
+.bsi-dash-mascot:hover {
+  // Paused (not scaled) — the bob keyframe already drives `transform` every frame, which
+  // would otherwise fight a hover-only transform for the same property.
+  animation-play-state: paused;
+  box-shadow: 0 20px 40px rgba(11, 11, 13, 0.22);
+}
+.bsi-dash-mascot:focus-visible { outline: 2px solid var(--dash-white); outline-offset: 3px; }
+.bsi-dash-mascot__svg {
+  width: 28px; height: 28px; pointer-events: none;
+  transition: transform 0.4s var(--dash-ease);
+}
+.bsi-dash-mascot__blade {
+  transform-box: view-box;
+  transform-origin: 12px 12px;
+  animation: bsi-mascot-snip-a 1.7s ease-in-out infinite;
+}
+.bsi-dash-mascot__blade--b { animation-name: bsi-mascot-snip-b; }
+
+// Past the scroll threshold (see initScrollTop in bsi_salon_dashboard.js, which toggles this
+// class), the whole icon turns 90° counter-clockwise (left) and holds there — a plain
+// transition, not a looping animation. The blades keep snipping underneath regardless
+// (different element, so no fight over the same `transform` property). Clicking straightens
+// it back out immediately (see the JS) rather than waiting for the scroll-up to finish.
+.bsi-dash-mascot.is-scrolled .bsi-dash-mascot__svg {
+  transform: rotate(-90deg);
+}
+
+@keyframes bsi-mascot-snip-a {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(20deg); }
+}
+@keyframes bsi-mascot-snip-b {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-20deg); }
+}
+@keyframes bsi-mascot-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@media (max-width: 768px) {
+  .bsi-dash-mascot { width: 44px; height: 44px; right: 14px; bottom: 14px; }
+  .bsi-dash-mascot__svg { width: 22px; height: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bsi-dash-mascot,
+  .bsi-dash-mascot__blade { animation: none; }
+}
+
+// ── Main content ────────────────────────────────────────────────────────
+.bsi-dash-main { flex: 1; min-width: 0; }
+.bsi-dash {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 22px 32px 64px;
+}
+
+// ── Header ──────────────────────────────────────────────────────────────
+.bsi-dash__header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+  opacity: 0; transform: translateY(-8px);
+  animation: bsi-dash-fade-down var(--dash-speed-slow) var(--dash-ease) forwards;
+}
+@keyframes bsi-dash-fade-down { to { opacity: 1; transform: translateY(0); } }
+
+.bsi-dash__burger {
+  display: none; flex-direction: column; gap: 4px; border: none; background: none; cursor: pointer;
+  padding: 8px; border-radius: var(--dash-radius-sm);
+}
+.bsi-dash__burger span { width: 18px; height: 2px; background: var(--dash-fg); border-radius: 2px; }
+.bsi-dash__burger:hover { background: var(--dash-gray-100); }
+
+.bsi-dash__brand { margin-right: auto; }
+.bsi-dash__brand h1 { font-size: 22px; font-weight: 800; margin: 0; letter-spacing: -0.02em; }
+.bsi-dash__brand p { margin: 2px 0 0; font-size: 13px; color: var(--dash-muted); }
+
+.bsi-dash__search {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--dash-card); border: 1px solid var(--dash-border);
+  border-radius: var(--dash-radius-pill); padding: 8px 14px; color: var(--dash-muted);
+  width: 280px; max-width: 32vw; transition: box-shadow var(--dash-speed) ease, border-color var(--dash-speed) ease;
+}
+.bsi-dash__search:focus-within { border-color: var(--dash-accent); box-shadow: 0 0 0 3px var(--dash-accent-soft); }
+.bsi-dash__search input { border: none; outline: none; font-size: 13px; width: 100%; background: none; color: var(--dash-fg); }
+
+.bsi-dash__actions { display: flex; align-items: center; gap: 10px; }
+.bsi-dash__location select {
+  border: 1px solid var(--dash-border); background: var(--dash-card); color: var(--dash-fg);
+  border-radius: var(--dash-radius-pill); padding: 8px 14px; font-size: 12.5px; font-weight: 700;
+  cursor: pointer; transition: box-shadow var(--dash-speed-fast) ease;
+}
+.bsi-dash__location select:hover, .bsi-dash__location select:focus { box-shadow: var(--dash-shadow); outline: none; }
+.bsi-dash__date input {
+  border: 1px solid var(--dash-border); background: var(--dash-card); color: var(--dash-fg);
+  border-radius: var(--dash-radius-pill); padding: 8px 14px; font-size: 12.5px; font-weight: 700;
+  cursor: pointer; transition: box-shadow var(--dash-speed-fast) ease; font-family: inherit;
+  color-scheme: light dark;
+}
+.bsi-dash__date input:hover, .bsi-dash__date input:focus { box-shadow: var(--dash-shadow); outline: none; }
+.bsi-dash__icon-btn {
+  border: 1px solid var(--dash-border); background: var(--dash-card); color: var(--dash-fg);
+  width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform var(--dash-speed-fast) var(--dash-ease), box-shadow var(--dash-speed-fast) var(--dash-ease);
+}
+.bsi-dash__website-link {
+  display: flex; align-items: center; gap: 6px; border: 1px solid var(--dash-border);
+  background: var(--dash-card); color: var(--dash-fg); border-radius: var(--dash-radius-pill);
+  padding: 8px 14px; font-size: 12.5px; font-weight: 700; white-space: nowrap;
+  transition: transform var(--dash-speed-fast) var(--dash-ease), box-shadow var(--dash-speed-fast) var(--dash-ease);
+}
+.bsi-dash__website-link:hover { box-shadow: var(--dash-shadow); transform: translateY(-1px); color: var(--dash-accent); }
+.bsi-dash__icon-btn:hover { box-shadow: var(--dash-shadow); transform: translateY(-1px); }
+.bsi-dash__icon-btn.is-spinning svg { animation: bsi-dash-spin 700ms linear; }
+@keyframes bsi-dash-spin { to { transform: rotate(360deg); } }
+
+.bsi-dash__notif, .bsi-dash__profile { position: relative; }
+.bsi-dash__notif-dot {
+  position: absolute; top: 7px; right: 8px; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--dash-accent); box-shadow: 0 0 0 2px var(--dash-card);
+}
+.bsi-dash__notif-panel, .bsi-dash__profile-panel {
+  position: absolute; top: calc(100% + 10px); right: 0; background: var(--dash-card);
+  border: 1px solid var(--dash-border); border-radius: var(--dash-radius-md); box-shadow: var(--dash-shadow-hover);
+  min-width: 220px; padding: 10px; opacity: 0; visibility: hidden; transform: translateY(-6px);
+  transition: opacity var(--dash-speed-fast) ease, transform var(--dash-speed-fast) var(--dash-ease), visibility var(--dash-speed-fast);
+  z-index: 30;
+}
+.bsi-dash__notif-panel.is-open, .bsi-dash__profile-panel.is-open { opacity: 1; visibility: visible; transform: translateY(0); }
+.bsi-dash__notif-title { font-size: 12px; font-weight: 700; margin: 4px 8px 8px; color: var(--dash-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.bsi-dash__notif-panel ul { list-style: none; margin: 0; padding: 0; }
+.bsi-dash__notif-panel li { padding: 8px; font-size: 13px; border-radius: var(--dash-radius-sm); }
+.bsi-dash__notif-panel li:not(.bsi-dash-empty):hover { background: var(--dash-gray-50); }
+.bsi-dash__profile-panel a {
+  display: block; padding: 9px 10px; border-radius: var(--dash-radius-sm); font-size: 13px;
+  color: var(--dash-fg); text-decoration: none; transition: background var(--dash-speed-fast) ease;
+}
+.bsi-dash__profile-panel a:hover { background: var(--dash-gray-50); }
+
+.bsi-dash__profile-btn {
+  display: flex; align-items: center; gap: 8px; border: 1px solid var(--dash-border);
+  background: var(--dash-card); border-radius: var(--dash-radius-pill); padding: 5px 12px 5px 5px;
+  cursor: pointer; color: var(--dash-fg); transition: box-shadow var(--dash-speed-fast) ease;
+}
+.bsi-dash__profile-btn:hover { box-shadow: var(--dash-shadow); }
+.bsi-dash__avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: var(--dash-gray-100); }
+.bsi-dash__profile-name { font-size: 13px; font-weight: 700; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+// ── Error state ─────────────────────────────────────────────────────────
+.bsi-dash__error {
+  background: var(--dash-card); border: 1px solid var(--dash-accent-soft); border-radius: var(--dash-radius-lg);
+  padding: 26px; text-align: center; margin-bottom: 20px;
+}
+.bsi-dash__error p { margin: 0 0 12px; color: var(--dash-muted); font-weight: 600; }
+.bsi-dash__error button {
+  border: none; background: var(--dash-accent); color: #fff; font-weight: 700; font-size: 13px;
+  padding: 9px 20px; border-radius: var(--dash-radius-pill); cursor: pointer;
+  transition: transform var(--dash-speed-fast) ease;
+}
+.bsi-dash__error button:hover { transform: translateY(-1px); }
+
+// ── KPI cards ───────────────────────────────────────────────────────────
+.bsi-dash__kpis {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 12px;
+}
+.bsi-kpi { position: relative; overflow: hidden; }
+.bsi-kpi[data-href] { cursor: pointer; transition: box-shadow var(--dash-speed) var(--dash-ease), transform var(--dash-speed) var(--dash-ease); }
+.bsi-kpi[data-href]:hover { box-shadow: var(--dash-shadow); transform: translateY(-2px); }
+.bsi-kpi__icon {
+  width: 28px; height: 28px; border-radius: var(--dash-radius-sm);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 9px;
+  transition: transform var(--dash-speed) var(--dash-ease);
+}
+.bsi-kpi__icon svg { width: 15px; height: 15px; }
+.bsi-kpi:hover .bsi-kpi__icon { transform: scale(1.08) rotate(-4deg); }
+.bsi-kpi__icon--accent { background: var(--dash-accent-soft); color: var(--dash-accent); }
+.bsi-kpi__icon--teal { background: var(--dash-teal-soft); color: var(--dash-teal); }
+.bsi-kpi__icon--amber { background: var(--dash-amber-soft); color: var(--dash-amber); }
+.bsi-kpi__label { font-size: 10.5px; font-weight: 700; color: var(--dash-muted); margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+.bsi-kpi__value { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; position: relative; }
+.bsi-kpi__foot { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 11px; flex-wrap: wrap; }
+.bsi-kpi__change { font-weight: 800; padding: 2px 7px; border-radius: var(--dash-radius-pill); }
+.bsi-kpi__change.is-up { background: var(--dash-green-soft); color: var(--dash-green); }
+.bsi-kpi__change.is-down { background: var(--dash-accent-soft); color: var(--dash-accent); }
+.bsi-kpi__change.is-flat { background: var(--dash-gray-100); color: var(--dash-muted); }
+.bsi-kpi__sub { color: var(--dash-muted); }
+.bsi-kpi__spark { position: absolute; right: 0; bottom: 0; width: 90px; height: 26px; opacity: 0.9; }
+.bsi-kpi__spark path { fill: none; stroke-width: 2; stroke-linecap: round; }
+
+// ── Bento grid ──────────────────────────────────────────────────────────
+.bsi-dash__grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 12px; }
+
+.bsi-dash-card {
+  position: relative;
+  background: var(--dash-card);
+  border: 1px solid var(--dash-border);
+  border-radius: var(--dash-radius-md);
+  padding: 15px 17px;
+  box-shadow: var(--dash-shadow);
+  transition: transform var(--dash-speed) var(--dash-ease), box-shadow var(--dash-speed) var(--dash-ease);
+  opacity: 0;
+  transform: translateY(14px);
+}
+.bsi-dash-card.bsi-in-view { opacity: 1; transform: translateY(0); }
+.bsi-dash-card:hover { box-shadow: var(--dash-shadow-hover); transform: translateY(-3px); }
+
+// Continuously-moving light chasing around the border — scoped to the 6 KPI cards only
+// (.bsi-kpi.bsi-dash-card, a compound selector so it always outranks the plain
+// .bsi-dash-card border above regardless of source order), not every card on the page.
+// Two-layer background-clip gradient-border technique (a flat fill clipped to padding-box,
+// a conic-gradient clipped to border-box) rather than a masked ::before overlay — a ::before
+// positioned outside its own box (inset:-1px) gets clipped by these same cards' own
+// overflow:hidden (needed for their sparkline graphs) before it ever paints, so that
+// approach never actually worked here. If a browser doesn't support @property, --bsi-angle
+// just stays static — a plain (non-animated) border, a harmless fallback, not a broken look.
+@property --bsi-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+.bsi-kpi.bsi-dash-card {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--dash-card), var(--dash-card)) padding-box,
+    conic-gradient(from var(--bsi-angle),
+      var(--dash-border) 0deg, var(--dash-accent) 20deg, var(--dash-accent-2) 40deg,
+      var(--dash-border) 65deg, var(--dash-border) 360deg) border-box;
+  animation: bsi-border-spin 6s linear infinite;
+}
+@keyframes bsi-border-spin { to { --bsi-angle: 360deg; } }
+
+.bsi-col-4 { grid-column: span 4; }
+.bsi-col-5 { grid-column: span 5; }
+.bsi-col-7 { grid-column: span 7; }
+.bsi-col-8 { grid-column: span 8; }
+.bsi-col-12 { grid-column: span 12; }
+
+.bsi-dash-card__title {
+  font-size: 13px; font-weight: 700; margin: 0 0 11px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+}
+.bsi-dash-card__title small { font-weight: 600; color: var(--dash-muted); font-size: 12px; }
+.bsi-dash-card__link { font-size: 12.5px; font-weight: 700; color: var(--dash-accent); text-decoration: none; }
+.bsi-dash-card__link:hover { text-decoration: underline; }
+
+// ── Revenue chart ───────────────────────────────────────────────────────
+.bsi-dash-filter { display: flex; gap: 2px; background: var(--dash-gray-100); border-radius: var(--dash-radius-pill); padding: 3px; }
+.bsi-dash-filter button {
+  border: none; background: none; font-size: 12px; font-weight: 700; color: var(--dash-muted);
+  padding: 6px 13px; border-radius: var(--dash-radius-pill); cursor: pointer;
+  transition: background var(--dash-speed-fast) ease, color var(--dash-speed-fast) ease;
+}
+.bsi-dash-filter button.is-active { background: var(--dash-black); color: #fff; }
+.bsi-dash-filter button:not(.is-active):hover { background: var(--dash-gray-200); }
+
+.bsi-dash-chart-legend { display: flex; gap: 16px; font-size: 12px; color: var(--dash-muted); margin-bottom: 10px; }
+.bsi-dash-chart-legend span { display: flex; align-items: center; gap: 6px; }
+.bsi-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.bsi-dot--revenue { background: var(--dash-accent); }
+
+.bsi-dash-chart-wrap { position: relative; }
+.bsi-dash-chart path.bsi-series-area { opacity: 0.9; transition: d var(--dash-speed-slow) var(--dash-ease); }
+.bsi-dash-chart path.bsi-series-line {
+  fill: none; stroke-width: 2.5;
+  stroke-dasharray: 2000; stroke-dashoffset: 2000;
+  transition: stroke-dashoffset 1100ms var(--dash-ease), d var(--dash-speed-slow) var(--dash-ease);
+}
+.bsi-dash-chart.bsi-in-view path.bsi-series-line { stroke-dashoffset: 0; }
+.bsi-dash-chart path.bsi-series-revenue { stroke: var(--dash-accent); }
+.bsi-dash-chart .bsi-grid-line { stroke: var(--dash-gray-100); stroke-width: 1; }
+.bsi-dash-chart .bsi-hover-dot { fill: var(--dash-fg); opacity: 0; transition: opacity 120ms ease; }
+.bsi-chart-dot { fill: var(--dash-accent); filter: drop-shadow(0 0 4px var(--dash-accent)); }
+.bsi-dash-chart-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--dash-muted); margin-top: 4px; padding: 0 2px; }
+.bsi-dash-chart-tooltip {
+  position: absolute; background: var(--dash-black); color: #fff; font-size: 11.5px; padding: 6px 10px;
+  border-radius: 8px; pointer-events: none; transform: translate(-50%, -110%); white-space: nowrap;
+  box-shadow: var(--dash-shadow-hover); z-index: 5;
+}
+
+// ── Donut / legend ──────────────────────────────────────────────────────
+.bsi-dash-donut { display: flex; align-items: center; gap: 18px; }
+.bsi-dash-legend { list-style: none; margin: 0; padding: 0; font-size: 13px; flex: 1; }
+.bsi-dash-legend li { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.bsi-dash-legend__swatch { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+.bsi-dash-legend__count { margin-left: auto; font-weight: 700; }
+
+// ── Tables (Appointments / Transactions) ─────────────────────────────────
+.bsi-dash-table-wrap { overflow-x: auto; }
+.bsi-dash-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.bsi-dash-table th {
+  text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--dash-muted); padding: 0 10px 10px; font-weight: 700; white-space: nowrap;
+}
+.bsi-dash-table td { padding: 10px; border-top: 1px solid var(--dash-border); vertical-align: middle; }
+.bsi-dash-table tbody tr { transition: background var(--dash-speed-fast) ease; }
+.bsi-dash-table tbody tr:hover { background: var(--dash-gray-50); }
+// Only Today's Bookings rows open a record on click — Transactions shares the same
+// .bsi-dash-table markup but isn't wired to any record, so it stays non-clickable.
+#appointmentsTable tbody tr { cursor: pointer; }
+.bsi-dash-table__person { display: flex; align-items: center; gap: 9px; font-weight: 700; white-space: nowrap; }
+.bsi-dash-table__avatar {
+  width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: var(--dash-gray-100);
+  flex-shrink: 0; font-size: 11px; font-weight: 800; color: var(--dash-accent);
+  display: flex; align-items: center; justify-content: center;
+}
+.bsi-dash-table__muted { color: var(--dash-muted); font-weight: 500; }
+
+.bsi-dash-badge {
+  font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: var(--dash-radius-pill);
+  white-space: nowrap; display: inline-block;
+}
+.bsi-dash-badge--pending { background: var(--dash-amber-soft); color: var(--dash-amber); }
+.bsi-dash-badge--in_progress { background: var(--dash-teal-soft); color: var(--dash-teal); }
+.bsi-dash-badge--completed, .bsi-dash-badge--paid { background: var(--dash-green-soft); color: var(--dash-green); }
+.bsi-dash-badge--cancelled, .bsi-dash-badge--refunded { background: var(--dash-accent-soft); color: var(--dash-accent); }
+.bsi-dash-badge--unbilled { background: var(--dash-gray-100); color: var(--dash-gray-700); }
+
+// ── Popular services ─────────────────────────────────────────────────────
+.bsi-service-row { padding: 10px 0; border-bottom: 1px solid var(--dash-border); cursor: pointer; }
+.bsi-service-row:last-child { border-bottom: none; }
+.bsi-service-row__top { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; margin-bottom: 7px; }
+.bsi-service-row__name { font-weight: 700; }
+.bsi-service-row__meta { color: var(--dash-muted); font-size: 12px; }
+.bsi-service-row__track { height: 7px; border-radius: var(--dash-radius-pill); background: var(--dash-gray-100); overflow: hidden; }
+.bsi-service-row__fill {
+  height: 100%; border-radius: var(--dash-radius-pill); width: 0%;
+  background: linear-gradient(90deg, var(--dash-accent), var(--dash-accent-2));
+  transition: width 900ms var(--dash-ease);
+}
+
+// ── Top staff ─────────────────────────────────────────────────────────────
+.bsi-staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+.bsi-staff-card {
+  border: 1px solid var(--dash-border); border-radius: var(--dash-radius-md); padding: 16px 14px;
+  text-align: center; cursor: pointer;
+  transition: transform var(--dash-speed) var(--dash-ease), box-shadow var(--dash-speed) var(--dash-ease);
+}
+.bsi-staff-card:hover { transform: translateY(-3px); box-shadow: var(--dash-shadow); }
+.bsi-staff-card__avatar {
+  width: 52px; height: 52px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;
+  background: var(--dash-gray-100); display: flex; align-items: center; justify-content: center;
+  font-weight: 800; color: var(--dash-accent); font-size: 16px;
+}
+.bsi-staff-card__name { font-weight: 700; font-size: 13.5px; margin-bottom: 4px; }
+.bsi-staff-card .bsi-dash-badge { margin-bottom: 6px; }
+.bsi-staff-card__role { font-size: 11.5px; color: var(--dash-muted); margin-bottom: 8px; }
+.bsi-staff-card__stat { font-size: 12px; color: var(--dash-muted); margin: 2px 0; }
+.bsi-staff-card__stat strong { color: var(--dash-fg); }
+.bsi-staff-card__rating { color: var(--dash-amber); font-weight: 700; font-size: 12.5px; margin-top: 4px; }
+.bsi-staff-card__bar { height: 5px; border-radius: var(--dash-radius-pill); background: var(--dash-gray-100); margin-top: 10px; overflow: hidden; }
+.bsi-staff-card__bar-fill { height: 100%; width: 0%; background: var(--dash-teal); transition: width 900ms var(--dash-ease); border-radius: var(--dash-radius-pill); }
+
+// ── Activity feed (upcoming) ─────────────────────────────────────────────
+.bsi-dash-feed { list-style: none; margin: 0; padding: 0; }
+.bsi-dash-feed li {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--dash-border); font-size: 13px; cursor: pointer;
+}
+.bsi-dash-feed li:last-child { border-bottom: none; }
+.bsi-dash-feed__name { font-weight: 700; }
+.bsi-dash-feed__meta { color: var(--dash-muted); font-size: 12px; }
+
+// ── Quick actions ─────────────────────────────────────────────────────────
+.bsi-quick-actions { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.bsi-quick-action {
+  display: flex; flex-direction: column; align-items: center; gap: 9px; text-align: center;
+  padding: 18px 10px; border-radius: var(--dash-radius-md); border: 1px solid var(--dash-border);
+  color: var(--dash-fg); text-decoration: none; font-size: 12.5px; font-weight: 700;
+  transition: transform var(--dash-speed) var(--dash-ease), box-shadow var(--dash-speed) var(--dash-ease), border-color var(--dash-speed) ease;
+}
+.bsi-quick-action:hover { transform: translateY(-3px); box-shadow: var(--dash-shadow-hover); border-color: var(--dash-accent-soft); }
+.bsi-quick-action__icon {
+  width: 38px; height: 38px; border-radius: 50%; background: var(--dash-accent-soft); color: var(--dash-accent);
+  display: flex; align-items: center; justify-content: center; transition: transform var(--dash-speed) var(--dash-ease);
+}
+.bsi-quick-action:hover .bsi-quick-action__icon { transform: scale(1.1) rotate(-6deg); }
+
+.bsi-dash-empty { color: var(--dash-muted); font-size: 13px; padding: 8px 0; }
+
+// ── Pagination (Today's Appointments, Upcoming, Popular Services, Top Staff, Transactions) ──
+.bsi-pagination {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--dash-border);
+  font-size: 12px; color: var(--dash-muted); font-weight: 600;
+}
+.bsi-pagination button {
+  border: 1px solid var(--dash-border); background: var(--dash-card); color: var(--dash-fg);
+  width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center; line-height: 1;
+  transition: background var(--dash-speed-fast) ease, box-shadow var(--dash-speed-fast) ease;
+}
+.bsi-pagination button:hover:not(:disabled) { box-shadow: var(--dash-shadow); }
+.bsi-pagination button:disabled { opacity: 0.35; cursor: not-allowed; }
+
+// ── Loyalty / Referral mini-cards ───────────────────────────────────────────
+.bsi-mini-stat { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+.bsi-mini-list { margin-top: 10px; }
+.bsi-mini-list__row {
+  display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12.5px;
+  border-bottom: 1px solid var(--dash-border); cursor: pointer;
+}
+.bsi-mini-list__row:last-child { border-bottom: none; }
+.bsi-mini-list__rank {
+  width: 18px; height: 18px; border-radius: 50%; background: var(--dash-gray-100);
+  display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 10px;
+  flex-shrink: 0; color: var(--dash-gray-700);
+}
+.bsi-mini-list__name { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bsi-mini-list__value { font-weight: 700; color: var(--dash-accent); flex-shrink: 0; }
+
+// ── Gift card informational note (no backend ledger to show real numbers for yet) ──
+.bsi-giftcard-note { font-size: 12.5px; color: var(--dash-muted); line-height: 1.5; margin: 2px 0 10px; }
+
+// ── Skeleton loaders ──────────────────────────────────────────────────────
+@keyframes bsi-shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+.bsi-skel {
+  display: block; border-radius: 8px;
+  background: linear-gradient(90deg, var(--dash-gray-100) 25%, var(--dash-gray-200) 37%, var(--dash-gray-100) 63%);
+  background-size: 300% 100%;
+  animation: bsi-shimmer 1.4s ease infinite;
+}
+.bsi-skel--row { height: 18px; width: 100%; }
+.bsi-skel--card { height: 150px; width: 100%; border-radius: var(--dash-radius-md); }
+.bsi-kpi__value.bsi-skel-text, .bsi-mini-stat.bsi-skel-text {
+  color: transparent; background-clip: text; -webkit-background-clip: text;
+  background-image: linear-gradient(90deg, var(--dash-gray-100) 25%, var(--dash-gray-200) 37%, var(--dash-gray-100) 63%);
+  background-size: 300% 100%; animation: bsi-shimmer 1.4s ease infinite; border-radius: 6px;
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────
+@media (max-width: 1200px) {
+  .bsi-dash__kpis { grid-template-columns: repeat(3, 1fr); }
+  .bsi-quick-actions { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 1100px) {
+  .bsi-col-4, .bsi-col-5, .bsi-col-7, .bsi-col-8 { grid-column: span 12; }
+}
+@media (max-width: 960px) {
+  .bsi-dash-sidebar {
+    position: fixed; left: 0; top: 0; width: var(--dash-sidebar-w-open); transform: translateX(-100%);
+    transition: transform var(--dash-speed) var(--dash-ease);
+  }
+  .bsi-dash-sidebar.is-mobile-open { transform: translateX(0); }
+  .bsi-dash-sidebar .bsi-dash-nav__label,
+  .bsi-dash-sidebar .bsi-dash-sidebar__brand-text { opacity: 1; max-width: 200px; margin-left: 12px; }
+  .bsi-dash-sidebar__collapse-hint { display: none; }
+  .bsi-dash__burger { display: flex; }
+  .bsi-dash { padding: 18px 18px 48px; }
+}
+@media (max-width: 640px) {
+  .bsi-dash__kpis { grid-template-columns: repeat(2, 1fr); }
+  .bsi-quick-actions { grid-template-columns: repeat(2, 1fr); }
+  .bsi-dash__search { display: none; }
+  .bsi-dash__profile-name { display: none; }
+  .bsi-staff-grid { grid-template-columns: repeat(2, 1fr); }
+
+  // Tables collapse into stacked "cards": each row becomes a block, each cell a labeled line.
+  .bsi-dash-table thead { display: none; }
+  .bsi-dash-table, .bsi-dash-table tbody, .bsi-dash-table tr, .bsi-dash-table td { display: block; width: 100%; }
+  .bsi-dash-table tr {
+    border: 1px solid var(--dash-border); border-radius: var(--dash-radius-md); padding: 10px 12px; margin-bottom: 10px;
+  }
+  .bsi-dash-table td { border-top: none; padding: 5px 0; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .bsi-dash-table td[data-label]::before {
+    content: attr(data-label); font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--dash-muted); flex-shrink: 0;
+  }
+}
+
+// ── Reduced motion ────────────────────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

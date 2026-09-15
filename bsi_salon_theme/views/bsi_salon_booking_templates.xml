@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="bsi_page_booking" name="Salon Theme: Booking">
+        <t t-call="bsi_salon_theme.bsi_layout">
+            <t t-set="cat_labels" t-value="{'hair': 'Hair', 'colour': 'Colour', 'nails': 'Nails', 'skin': 'Skin', 'body': 'Body', 'bridal': 'Bridal'}"/>
+
+            <section class="bsi-container bsi-page-hero bsi-section--bordered-bottom bsi-reveal">
+                <div class="bsi-booking-banner">
+                    <div class="bsi-booking-banner__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <rect x="3" y="5" width="18" height="16" rx="3"/>
+                            <path d="M8 3v4M16 3v4M3 10h18"/>
+                            <circle cx="8.5" cy="14.5" r="1.1" fill="currentColor" stroke="none"/>
+                            <circle cx="12" cy="14.5" r="1.1" fill="currentColor" stroke="none"/>
+                            <circle cx="15.5" cy="14.5" r="1.1" fill="currentColor" stroke="none"/>
+                        </svg>
+                    </div>
+                    <div class="bsi-booking-banner__copy">
+                        <p class="bsi-eyebrow">New Booking</p>
+                        <h1 class="bsi-booking-banner__title">Book Your Booking</h1>
+                        <p class="bsi-booking-banner__sub">Pick your city, branch, services and stylist — then lock in a slot that works for you.</p>
+                    </div>
+                    <div class="bsi-booking-banner__stats">
+                        <div class="bsi-booking-banner__stat"><strong t-esc="len(cities)"/><span>Cities</span></div>
+                        <div class="bsi-booking-banner__stat"><strong t-esc="len(locations)"/><span>Branches</span></div>
+                        <div class="bsi-booking-banner__stat"><strong>4.8★</strong><span>Rated</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bsi-container bsi-section" style="max-width:900px;">
+
+                <div t-if="request.params.get('submitted')" class="bsi-contact-success">
+                    <div class="bsi-contact-success__mark">✦</div>
+                    <h2 class="bsi-h3">You're all set!</h2>
+                    <p class="bsi-muted">Thanks, <t t-esc="request.params.get('name')"/> — we'll confirm your slot shortly.</p>
+                    <a href="/salon/booking" class="bsi-btn bsi-btn--accent">Book Another</a>
+                </div>
+
+                <form t-else="" action="/salon/booking/submit" method="post" class="bsi-booking-wizard" id="bsiBookingWizard">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <input type="hidden" name="location_id" id="bsiBookingLocationId"
+                           t-att-value="request.params.get('location_id')"/>
+                    <input type="hidden" name="service_ids" id="bsiBookingServiceIds"/>
+                    <input type="hidden" name="chair_ids" id="bsiBookingChairIds"/>
+                    <input type="hidden" name="artist_id" id="bsiBookingArtistId"/>
+                    <input type="hidden" name="use_slot" id="bsiBookingUseSlot" t-att-value="'1' if time_slots else '0'"/>
+                    <input type="hidden" name="slot_id" id="bsiBookingSlotId"/>
+
+                    <div t-if="error" class="bsi-alert bsi-alert--error">
+                        <t t-esc="error"/>
+                    </div>
+
+                    <div class="bsi-booking-steps">
+                        <div class="bsi-booking-step bsi-booking-step--active" data-step="1"><span>1</span>City</div>
+                        <div class="bsi-booking-step" data-step="2"><span>2</span>Store</div>
+                        <div class="bsi-booking-step" data-step="3"><span>3</span>Services</div>
+                        <div class="bsi-booking-step" data-step="4"><span>4</span>Chairs</div>
+                        <div class="bsi-booking-step" data-step="5"><span>5</span>Stylist</div>
+                        <div class="bsi-booking-step" data-step="6"><span>6</span>Date &amp; Time</div>
+                        <div class="bsi-booking-step" data-step="7"><span>7</span>Confirm</div>
+                    </div>
+
+                    <!-- Compact progress bar shown instead of the 7-label row on narrow screens -->
+                    <div class="bsi-booking-steps-mobile">
+                        <div class="bsi-booking-steps-mobile__bar"><div class="bsi-booking-steps-mobile__fill" id="bsiStepProgressFill"/></div>
+                        <p class="bsi-booking-steps-mobile__label">Step <span id="bsiStepCurrent">1</span> of 7 — <span id="bsiStepName">City</span></p>
+                    </div>
+
+                    <!-- Step 1: City -->
+                    <div class="bsi-booking-panel bsi-booking-panel--active" data-panel="1">
+                        <p class="bsi-muted bsi-mb-md">Where would you like to visit us?</p>
+                        <div class="bsi-city-card-grid bsi-grid-3">
+                            <button t-foreach="cities" t-as="c" type="button" class="bsi-city-card bsi-reveal" t-att-data-city="c">
+                                <span class="bsi-city-card__badge">✓</span>
+                                <span class="bsi-city-card__icon" t-esc="c[0]"/>
+                                <span class="bsi-city-card__name" t-esc="c"/>
+                                <span class="bsi-city-card__meta">
+                                    <t t-esc="city_counts.get(c, 0)"/> <t t-esc="'branch' if city_counts.get(c, 0) == 1 else 'branches'"/>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Store -->
+                    <div class="bsi-booking-panel" data-panel="2">
+                        <div class="bsi-booking-store-list">
+                            <button t-foreach="locations" t-as="loc" type="button" class="bsi-booking-store"
+                                    t-att-data-city="loc.bsi_city" t-att-data-loc-id="loc.id">
+                                <span class="bsi-booking-store__name" t-esc="loc.name"/>
+                                <span class="bsi-muted-sm" t-esc="loc.bsi_address"/>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Services (multiple) -->
+                    <div class="bsi-booking-panel" data-panel="3">
+                        <div class="bsi-svc-picker" id="bsiBookingServicePicker">
+                            <label class="bsi-svc-search">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                                <input type="text" id="bsiBookingServiceSearch" placeholder="Search services…" autocomplete="off"/>
+                            </label>
+                            <div class="bsi-filter-bar bsi-filter-bar--static" id="bsiBookingServiceFilter">
+                                <div class="bsi-filter-bar__inner">
+                                    <button type="button" class="bsi-filter-btn bsi-filter-btn--active" data-cat="all">All</button>
+                                    <t t-foreach="['hair', 'colour', 'nails', 'skin', 'body', 'bridal']" t-as="c">
+                                        <button type="button" class="bsi-filter-btn" t-att-data-cat="c" t-esc="cat_labels[c]"/>
+                                    </t>
+                                </div>
+                            </div>
+                            <div class="bsi-svc-dropdown" id="bsiBookingServiceDropdown">
+                                <div class="bsi-svc-check-grid" id="bsiBookingServiceGrid">
+                                    <div t-foreach="services" t-as="s" class="bsi-svc-check" t-att-data-cat="s.bsi_category"
+                                         t-att-data-service-id="s.id" t-att-data-price="s._bsi_get_effective_price()"
+                                         t-att-data-name="s.name.lower()">
+                                        <span class="bsi-svc-check__badge">✓</span>
+                                        <div class="bsi-svc-check__body">
+                                            <span class="bsi-svc-check__name" t-esc="s.name"/>
+                                            <span class="bsi-svc-check__meta">
+                                                <t t-esc="s.bsi_duration"/> <t t-if="s.bsi_duration and s.bsi_price">·</t> <t t-esc="s.bsi_price"/>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bsi-svc-chips" id="bsiSelectedServiceChips"/>
+                        <div class="bsi-booking-total">
+                            Selected total: <strong id="bsiServiceTotal">₹0</strong>
+                        </div>
+                        <button type="button" class="bsi-btn bsi-btn--accent bsi-booking-next" data-next="4" disabled="disabled" id="bsiServiceNext">Continue to Chairs →</button>
+                    </div>
+
+                    <!-- Step 4: Chairs (multiple) -->
+                    <div class="bsi-booking-panel" data-panel="4">
+                        <p class="bsi-muted bsi-mb-md">Pick one chair per service type you selected.</p>
+                        <div class="bsi-chair-grid">
+                            <div t-foreach="chairs" t-as="ch" class="bsi-chair" t-att-data-chair-id="ch.id"
+                                 t-att-data-location="ch.bsi_location_id.id" t-att-data-category="ch.bsi_service_category">
+                                <span class="bsi-chair__badge">✓</span>
+                                <img src="/bsi_salon_theme/static/src/img/barber-chair.png" class="bsi-chair__img"/>
+                                <div class="bsi-chair__label" t-esc="ch.name"/>
+                            </div>
+                        </div>
+                        <button type="button" class="bsi-btn bsi-btn--accent bsi-booking-next" data-next="5" disabled="disabled" id="bsiChairNext">Continue to Stylist →</button>
+                    </div>
+
+                    <!-- Step 5: Stylist (optional — may add a flat ₹ surcharge) -->
+                    <div class="bsi-booking-panel" data-panel="5">
+                        <p class="bsi-muted bsi-mb-md">Pick a stylist, or continue with no preference. A stylist's rate may carry a flat surcharge shown below their name.</p>
+                        <label class="bsi-svc-search bsi-artist-search">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                            <input type="text" id="bsiBookingArtistSearch" placeholder="Search stylists…" autocomplete="off"/>
+                        </label>
+                        <div class="bsi-artist-check-grid" id="bsiBookingArtistGrid">
+                            <div class="bsi-artist-check bsi-artist-check--selected" data-artist-id="" data-charge="0">
+                                <div class="bsi-artist-check__avatar bsi-artist-check__avatar--any">✦</div>
+                                <div class="bsi-artist-check__body">
+                                    <span class="bsi-artist-check__name">No preference</span>
+                                    <span class="bsi-artist-check__meta">Any available stylist · standard rate</span>
+                                </div>
+                                <span class="bsi-artist-check__badge">✓</span>
+                            </div>
+                            <div t-foreach="artists" t-as="a" class="bsi-artist-check" t-att-data-artist-id="a.id"
+                                 t-att-data-location="a.bsi_location_id.id" t-att-data-charge="a.bsi_charge_amount or 0.0"
+                                 t-att-data-name="((a.name or '') + ' ' + (a.bsi_role or '')).lower()">
+                                <img class="bsi-artist-check__avatar"
+                                     t-att-src="('/web/image/bsi.salon.team.member/%s/bsi_image' % a.id) if a.bsi_image else (a.bsi_image_url or 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=300&amp;h=300&amp;fit=crop&amp;auto=format')"
+                                     t-att-alt="a.name"/>
+                                <div class="bsi-artist-check__body">
+                                    <span class="bsi-artist-check__name" t-esc="a.name"/>
+                                    <span class="bsi-artist-check__meta">
+                                        <t t-esc="a.bsi_role"/>
+                                        <t t-if="a.bsi_charge_amount">
+                                            · +₹<t t-esc="int(a.bsi_charge_amount)"/> charge
+                                        </t>
+                                        <t t-else="">· standard rate</t>
+                                    </span>
+                                </div>
+                                <span class="bsi-artist-check__badge">✓</span>
+                            </div>
+                        </div>
+                        <button type="button" class="bsi-btn bsi-btn--accent bsi-booking-next" data-next="6" id="bsiArtistNext">Continue to Date &amp; Time →</button>
+                    </div>
+
+                    <!-- Step 6: Date & Time -->
+                    <div class="bsi-booking-panel" data-panel="6">
+                        <div class="bsi-form__field bsi-form__field--narrow bsi-mb-md">
+                            <label>Booking Date *</label>
+                            <input type="date" name="preferred_date" id="bsiBookingDate" t-att-min="today" required="required"/>
+                        </div>
+
+                        <label class="bsi-booking-member-toggle bsi-mb-md">
+                            <input type="checkbox" id="bsiUseSlotToggle" t-att-checked="'checked' if time_slots else None"/>
+                            Use a fixed time slot instead of a custom time
+                        </label>
+
+                        <div id="bsiSlotPanel" t-att-hidden="None if time_slots else 'hidden'">
+                            <p class="bsi-form__hint bsi-mb-md" id="bsiSlotAvailabilityHint">
+                                Pick a date above to see which slots are still open.
+                            </p>
+                            <t t-set="morning_slots" t-value="[s for s in time_slots if s.bsi_start_time &lt; 12]"/>
+                            <t t-set="afternoon_slots" t-value="[s for s in time_slots if 12 &lt;= s.bsi_start_time &lt; 17]"/>
+                            <t t-set="evening_slots" t-value="[s for s in time_slots if s.bsi_start_time &gt;= 17]"/>
+                            <t t-foreach="[('Morning', morning_slots), ('Afternoon', afternoon_slots), ('Evening', evening_slots)]" t-as="grp">
+                                <div t-if="grp[1]" class="bsi-time-group">
+                                    <p class="bsi-time-group__heading" t-esc="grp[0]"/>
+                                    <div class="bsi-time-grid">
+                                        <button t-foreach="grp[1]" t-as="slot" type="button" class="bsi-time-slot"
+                                                t-att-data-slot-id="slot.id" t-esc="slot.name"/>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                        <div id="bsiCustomTimePanel" class="bsi-form__field bsi-form__field--narrow bsi-mb-md"
+                             t-att-hidden="'hidden' if time_slots else None">
+                            <label>Preferred Time *</label>
+                            <input type="time" name="preferred_time" id="bsiBookingCustomTime"/>
+                        </div>
+
+                        <button type="button" class="bsi-btn bsi-btn--accent bsi-booking-next" data-next="7" disabled="disabled" id="bsiDateTimeNext">Continue to Confirm →</button>
+                    </div>
+
+                    <!-- Step 7: Confirm -->
+                    <div class="bsi-booking-panel" data-panel="7">
+                        <div class="bsi-booking-summary">
+                            <h3 class="bsi-h3">Booking Summary</h3>
+                            <div class="bsi-booking-summary__grid">
+                                <div><label>City</label><span id="bsiSummaryCity">—</span></div>
+                                <div><label>Store</label><span id="bsiSummaryStore">—</span></div>
+                                <div><label>Stylist</label><span id="bsiSummaryArtist">No preference</span></div>
+                                <div><label>Date</label><span id="bsiSummaryDate">—</span></div>
+                                <div><label>Time</label><span id="bsiSummaryTime">—</span></div>
+                                <div><label>Services</label><span id="bsiSummaryServices">—</span></div>
+                                <div><label>Chairs</label><span id="bsiSummaryChairs">—</span></div>
+                            </div>
+                            <div class="bsi-booking-total">
+                                Estimated total: <strong id="bsiSummaryTotal">₹0</strong>
+                            </div>
+                            <label class="bsi-booking-member-toggle">
+                                <input type="checkbox" name="is_member" value="1" id="bsiUseMemberToggle"/>
+                                <span id="bsiMemberToggleLabel">Apply my membership discount</span>
+                            </label>
+                        </div>
+
+                        <div class="bsi-form__row">
+                            <div class="bsi-form__field">
+                                <label>Full Name</label>
+                                <input type="text" name="name" placeholder="Your name (optional)"/>
+                            </div>
+                            <div class="bsi-form__field">
+                                <label>Email</label>
+                                <input type="email" name="email" id="bsiBookingEmail" placeholder="you@email.com"/>
+                            </div>
+                        </div>
+                        <div class="bsi-form__field">
+                            <label>Phone</label>
+                            <input type="tel" name="phone" id="bsiBookingPhone" placeholder="+91 90000 00000"/>
+                        </div>
+                        <p class="bsi-form__hint" id="bsiContactHint">Please provide an email or a phone number.</p>
+
+                        <div class="bsi-form__field">
+                            <label>Referral Code (optional)</label>
+                            <input type="text" name="referral_code" t-att-value="referral_code" placeholder="Got a friend's code?"/>
+                        </div>
+
+                        <button type="submit" class="bsi-btn bsi-btn--accent bsi-btn--block" id="bsiBookingSubmit">Confirm Booking</button>
+                    </div>
+
+                    <button type="button" class="bsi-booking-back" id="bsiBookingBack" style="display:none;">← Back</button>
+                </form>
+            </section>
+        </t>
+    </template>
+
+</odoo>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="bsi_salon_booking_request_portal_rule" model="ir.rule">
+        <field name="name">Salon Appointment: portal users see only their own</field>
+        <field name="model_id" ref="model_bsi_salon_booking_request"/>
+        <field name="domain_force">[('bsi_partner_id', '=', user.partner_id.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+    </record>
+
+    <record id="bsi_salon_membership_subscription_portal_rule" model="ir.rule">
+        <field name="name">Salon Membership Subscription: portal users see only their own</field>
+        <field name="model_id" ref="model_bsi_salon_membership_subscription"/>
+        <field name="domain_force">[('bsi_partner_id', '=', user.partner_id.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+    </record>
+
+    <record id="bsi_salon_loyalty_point_portal_rule" model="ir.rule">
+        <field name="name">Salon Loyalty Point: portal users see only their own</field>
+        <field name="model_id" ref="model_bsi_salon_loyalty_point"/>
+        <field name="domain_force">[('bsi_partner_id', '=', user.partner_id.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+    </record>
+
+</odoo>

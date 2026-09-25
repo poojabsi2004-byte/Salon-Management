@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Point the default website at the Enrich experience on install. -->
+    <function model="website" name="write">
+        <value eval="[ref('website.default_website')]"/>
+        <value eval="{'homepage_url': '/salon'}"/>
+    </function>
+
+</odoo>

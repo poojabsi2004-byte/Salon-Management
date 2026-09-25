@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="bsi_salon_web_action" model="ir.actions.act_url">
+        <field name="name">Enrich Website</field>
+        <field name="url">/salon</field>
+        <field name="target">self</field>
+    </record>
+
+    <!-- <menuitem id="bsi_salon_web_root_menu"
+              name="Enrich Website"
+              action="bsi_salon_web_action"
+              web_icon="bsi_salon_web,static/description/icon.png"
+              sequence="15"/> -->
+
+    <!-- The site is entirely custom-coded (see bsi_salon_web.main), never built with the
+         stock Website builder, so the stock "Website" app icon's own default click (its
+         root menu carries no action of its own; Odoo falls back to its first child's
+         action, website.website_preview, which opens the builder iframe on the generic
+         placeholder site) would only ever show an empty, unrelated page. Reusing this same
+         /salon redirect here means both "Website" app icons now do the one useful thing:
+         open the real site, exactly like "Enrich Website" above already does. -->
+    <record id="website.menu_website_configuration" model="ir.ui.menu">
+        <field name="action" ref="bsi_salon_web_action"/>
+    </record>
+
+    <!-- The retail shop at /shop is the stock website_sale eCommerce catalogue,
+         restyled to match the Enrich design (see bsi_shop_templates.xml), not a
+         separate salon-only product model. Managing it lives under Salon
+         Management > Configuration below, which staff actually use day to day:
+         "Enrich Website" no longer exists as its own app to host a second copy of
+         this menu (see the /salon redirect above), so there is exactly one door
+         into it now instead of two. bsi_salon_backend itself cannot host these
+         directly: it has no dependency on website_sale, only this module does. -->
+    <menuitem id="bsi_salon_backend_shop_menu" name="Shop"
+              parent="bsi_salon_backend.bsi_salon_content_menu" sequence="45"/>
+    <menuitem id="bsi_salon_backend_product_menu" name="Products"
+              parent="bsi_salon_backend_shop_menu"
+              action="website_sale.product_template_action_website" sequence="10"/>
+    <menuitem id="bsi_salon_backend_category_menu" name="Product Categories"
+              parent="bsi_salon_backend_shop_menu"
+              action="website_sale.product_public_category_action" sequence="20"/>
+
+</odoo>

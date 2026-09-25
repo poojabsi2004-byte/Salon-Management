@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Enrich shop theming.
+
+        These inherit Odoo's own eCommerce views, so the xpath targets have to be
+        nodes that are stable across versions. Both shop additions anchor to
+        `div#wrap` — the frontend page wrapper — rather than to inner grid or
+        pager markup, whose classes Odoo renames between releases. A missing
+        xpath target raises at install time and blocks the whole module, so the
+        safest anchor wins over the most precise one.
+    -->
+
+    <!-- Enrich brand fonts on every frontend page, so the shop matches the site. Also
+         carries the handful of animation/hover rules the ported header and footer below
+         rely on (see bsi_website_header/bsi_website_footer) — lifted verbatim off /salon's
+         own served page, where the design tool that exports it puts every OTHER style
+         inline on the element itself, but keyframes and :hover can't be expressed inline. -->
+    <template id="bsi_shop_fonts" inherit_id="website.layout" name="Enrich: brand fonts">
+        <xpath expr="//head" position="inside">
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+            <link rel="stylesheet"
+                  href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,600&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap"/>
+            <style>
+                .enr-nav-link:hover { color: rgb(232, 40, 63) !important; }
+                .enr-nav-cta:hover { box-shadow: 0 6px 20px rgba(232, 40, 63, .45) !important; transform: translateY(-1px) !important; }
+                @keyframes enrCityPing {
+                    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.9; }
+                    100% { transform: translate(-50%, -50%) scale(3.2); opacity: 0; }
+                }
+                @keyframes enrCityGlow {
+                    0%, 100% { opacity: 0.5; }
+                    50% { opacity: 1; }
+                }
+                @keyframes enrRouteDraw {
+                    100% { stroke-dashoffset: 0; }
+                }
+            </style>
+        </xpath>
+    </template>
+
+    <!-- The real site header/footer, swapped in for the stock Odoo ones everywhere the
+         site is server-rendered (shop, cart, checkout, contact, portal...) — /salon
+         itself never uses this layout at all (see bsi_salon_web.main's own docstring: it
+         serves one self-contained exported page, header/footer included), so this is
+         purely for every OTHER frontend page, which until now fell back to Odoo's own
+         generic default theme instead of matching the site around it. Markup and every
+         inline style below are copied verbatim off that same /salon page's own rendered
+         header/footer — not reimplemented from scratch — so this is pixel-identical to
+         "the header and footer already used on the site", per instruction. The only
+         changes from that source: its nav items are JS-only buttons wired to the SPA's own
+         in-memory page state (no href at all — meaningless outside that running app), so
+         each becomes a real <a> to the matching /salon/<page> deep link (see main.py's own
+         NAV_INITIAL_DST for that same known page list), and "Shop" swaps from its muted,
+         de-emphasised style to the active/bold one, since a visitor here already IS on
+         Shop — everything else, styling included, is untouched. -->
+    <template id="bsi_website_header" inherit_id="website.layout" name="Enrich: real site header">
+        <xpath expr="//header" position="replace">
+            <header id="top" data-anchor="true" style="position: sticky; top: 0px; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 16px 48px; background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(20, 17, 17, 0.08); box-shadow: 0 2px 16px rgba(20, 17, 17, 0.05);">
+                <a href="/salon" style="display: flex; align-items: flex-start; gap: 4px; text-decoration: none;">
+                    <div style="position: relative;">
+                        <span style="font-family: 'Playfair Display', serif; font-weight: 500; font-size: 26px; color: rgb(22, 18, 19); letter-spacing: 0.5px;">enr<span style="position: relative;">i<span style="position: absolute; top: -13px; left: 1px; color: rgb(232, 40, 63); font-size: 9px;">♥</span></span>ch</span>
+                        <div style="font-size: 9.5px; font-style: italic; color: rgb(118, 118, 118); letter-spacing: 0.2px; margin-top: -4px;">love begins with you</div>
+                    </div>
+                </a>
+                <div style="display: flex; align-items: center; gap: 14px; min-width: 0px;">
+                    <div style="display: flex; align-items: center; gap: 22px; overflow-x: auto; scrollbar-width: none; min-width: 0px;">
+                        <a href="/salon/home" style="background: none; border: none; cursor: pointer; font-family: Manrope, sans-serif; font-size: 14px; color: rgb(44, 44, 44); font-weight: 600; padding: 4px 0px; white-space: nowrap; flex-shrink: 0; text-decoration: none;">Home</a>
+                        <a href="/salon/stores" style="background: none; border: none; cursor: pointer; font-family: Manrope, sans-serif; font-size: 14px; color: rgb(44, 44, 44); font-weight: 600; padding: 4px 0px; white-space: nowrap; flex-shrink: 0; text-decoration: none;">Stores</a>
+                        <a href="/salon/booking" style="background: none; border: none; cursor: pointer; font-family: Manrope, sans-serif; font-size: 14px; color: rgb(44, 44, 44); font-weight: 600; padding: 4px 0px; white-space: nowrap; flex-shrink: 0; text-decoration: none;">Book Now</a>
+                        <a href="/salon/membership" style="background: none; border: none; cursor: pointer; font-family: Manrope, sans-serif; font-size: 14px; color: rgb(44, 44, 44); font-weight: 600; padding: 4px 0px; white-space: nowrap; flex-shrink: 0; text-decoration: none;">Membership</a>
+                        <a href="/salon/services" style="background: none; border: none; cursor: pointer; font-family: Manrope, sans-serif; font-size: 14px; color: rgb(44, 44, 44); font-weight: 600; padding: 4px 0px; white-space: nowrap; flex-shrink: 0; text-decoration: none;">Services</a>
+                        <a href="/salon/stylists" style="background: none; border: none; cursor: pointer; font-family: Manrope, sans-serif; font-size: 14px; color: rgb(44, 44, 44); font-weight: 600; padding: 4px 0px; white-space: nowrap; flex-shrink: 0; text-decoration: none;">Stylists</a>
+                        <a href="/salon/about" style="background: none; border: none; cursor: pointer; font-family: Manrope, sans-serif; font-size: 14px; color: rgb(44, 44, 44); font-weight: 600; padding: 4px 0px; white-space: nowrap; flex-shrink: 0; text-decoration: none;">About</a>
+                        <a href="/salon/contact" style="background: none; border: none; cursor: pointer; font-family: Manrope, sans-serif; font-size: 14px; color: rgb(44, 44, 44); font-weight: 600; padding: 4px 0px; white-space: nowrap; flex-shrink: 0; text-decoration: none;">Contact</a>
+                        <a href="/shop" class="enr-nav-link" style="font-family: Manrope, sans-serif; font-size: 14px; color: rgb(22, 18, 19); font-weight: 800; padding: 4px 0px; white-space: nowrap; flex-shrink: 0; text-decoration: none; transition: color 0.2s;">Shop</a>
+                    </div>
+                    <a href="/salon/booking" class="enr-nav-cta" style="display: inline-block; background: rgb(232, 40, 63); color: rgb(255, 255, 255); border: none; padding: 11px 24px; border-radius: 4px; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 0.3px; box-shadow: 0 4px 14px rgba(232, 40, 63, 0.35); transition: box-shadow 0.2s, transform 0.2s; flex-shrink: 0; text-decoration: none;">Book Now</a>
+                </div>
+            </header>
+        </xpath>
+    </template>
+
+    <template id="bsi_website_footer" inherit_id="website.layout" name="Enrich: real site footer">
+        <xpath expr="//footer" position="replace">
+            <footer id="bottom" data-anchor="true" style="background: rgb(13, 13, 13); color: rgb(179, 179, 179); padding: 60px 48px 30px;">
+                <div style="max-width: 1280px; margin: 0px auto;">
+                    <div style="display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 40px; margin-bottom: 40px;">
+                        <div>
+                            <div style="font-family: 'Playfair Display', serif; font-weight: 500; font-size: 22px; color: rgb(255, 255, 255); margin-bottom: 2px;">enrich</div>
+                            <div style="font-size: 10.5px; font-style: italic; color: rgb(179, 179, 179); margin-bottom: 14px;">love begins with you</div>
+                            <div style="font-size: 13.5px; line-height: 1.7; max-width: 320px;">India's leading salon chain since 1997 — hair, skin, makeup and wellness across 100+ locations.</div>
+                            <div style="max-width: 320px; margin-top: 12px;">
+                                <div style="position: relative; height: 104px; border-radius: 12px; overflow: hidden; background: radial-gradient(at 40% 30%, rgb(27, 23, 25), rgb(16, 14, 15) 62%, rgb(10, 8, 9)); border: 1px solid rgba(253, 243, 234, 0.08);">
+                                    <div style="position: absolute; inset: -30%; background-image: linear-gradient(rgba(253, 243, 234, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(253, 243, 234, 0.04) 1px, transparent 1px); background-size: 22px 22px;"></div>
+                                    <span style="position: absolute; top: 7px; left: 9px; font-size: 7.5px; font-weight: 800; letter-spacing: 1.6px; color: rgb(232, 40, 63); z-index: 4;">OUR NETWORK</span>
+                                    <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position: absolute; inset: 0px; width: 100%; height: 100%;">
+                                        <path d="M30 12 L46 8 L58 16 L54 30 L64 38 L60 52 L70 62 L62 76 L48 88 L38 78 L30 60 L22 44 L26 26 Z" fill="rgba(253,243,234,.05)" stroke="rgba(201,161,90,.28)" stroke-width="0.6"/>
+                                        <g stroke="rgba(232,40,63,.45)" stroke-width="0.6" fill="none" stroke-linecap="round" stroke-dasharray="60" stroke-dashoffset="60">
+                                            <path d="M33,27 L39,40" style="animation: enrRouteDraw 2.4s ease-out 0.2s 1 forwards;"/>
+                                            <path d="M39,40 L36,52" style="animation: enrRouteDraw 2.4s ease-out 0.5s 1 forwards;"/>
+                                            <path d="M36,52 L33,66" style="animation: enrRouteDraw 2.4s ease-out 0.8s 1 forwards;"/>
+                                            <path d="M33,66 L44,72" style="animation: enrRouteDraw 2.4s ease-out 1.1s 1 forwards;"/>
+                                            <path d="M44,72 L50,86" style="animation: enrRouteDraw 2.4s ease-out 1.4s 1 forwards;"/>
+                                        </g>
+                                    </svg>
+                                    <span style="position: absolute; left: 33%; top: 27%; transform: translate(-50%, -50%); text-align: center;">
+                                        <span style="position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgb(232, 40, 63); animation: enrCityPing 3s ease-out 0s infinite;"></span>
+                                        <span style="position: relative; display: block; width: 5.5px; height: 5.5px; margin: 0px auto; border-radius: 50%; background: rgb(232, 40, 63); box-shadow: 0 0 7px rgba(232, 40, 63, 0.9); animation: enrCityGlow 2.6s ease-in-out 0s infinite;"></span>
+                                        <span style="display: block; font-size: 7px; font-weight: 800; color: rgb(253, 243, 234); margin-top: 2px; white-space: nowrap; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);">Ahmedabad</span>
+                                    </span>
+                                    <span style="position: absolute; left: 39%; top: 40%; transform: translate(-50%, -50%); text-align: center;">
+                                        <span style="position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgb(232, 40, 63); animation: enrCityPing 3s ease-out 0.4s infinite;"></span>
+                                        <span style="position: relative; display: block; width: 5.5px; height: 5.5px; margin: 0px auto; border-radius: 50%; background: rgb(232, 40, 63); box-shadow: 0 0 7px rgba(232, 40, 63, 0.9); animation: enrCityGlow 2.6s ease-in-out 0.4s infinite;"></span>
+                                        <span style="display: block; font-size: 7px; font-weight: 800; color: rgb(253, 243, 234); margin-top: 2px; white-space: nowrap; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);">Vadodara</span>
+                                    </span>
+                                    <span style="position: absolute; left: 36%; top: 52%; transform: translate(-50%, -50%); text-align: center;">
+                                        <span style="position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgb(232, 40, 63); animation: enrCityPing 3s ease-out 0.8s infinite;"></span>
+                                        <span style="position: relative; display: block; width: 5.5px; height: 5.5px; margin: 0px auto; border-radius: 50%; background: rgb(232, 40, 63); box-shadow: 0 0 7px rgba(232, 40, 63, 0.9); animation: enrCityGlow 2.6s ease-in-out 0.8s infinite;"></span>
+                                        <span style="display: block; font-size: 7px; font-weight: 800; color: rgb(253, 243, 234); margin-top: 2px; white-space: nowrap; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);">Surat</span>
+                                    </span>
+                                    <span style="position: absolute; left: 33%; top: 66%; transform: translate(-50%, -50%); text-align: center;">
+                                        <span style="position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgb(232, 40, 63); animation: enrCityPing 3s ease-out 1.2s infinite;"></span>
+                                        <span style="position: relative; display: block; width: 5.5px; height: 5.5px; margin: 0px auto; border-radius: 50%; background: rgb(232, 40, 63); box-shadow: 0 0 7px rgba(232, 40, 63, 0.9); animation: enrCityGlow 2.6s ease-in-out 1.2s infinite;"></span>
+                                        <span style="display: block; font-size: 7px; font-weight: 800; color: rgb(253, 243, 234); margin-top: 2px; white-space: nowrap; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);">Mumbai</span>
+                                    </span>
+                                    <span style="position: absolute; left: 44%; top: 72%; transform: translate(-50%, -50%); text-align: center;">
+                                        <span style="position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgb(232, 40, 63); animation: enrCityPing 3s ease-out 1.6s infinite;"></span>
+                                        <span style="position: relative; display: block; width: 5.5px; height: 5.5px; margin: 0px auto; border-radius: 50%; background: rgb(232, 40, 63); box-shadow: 0 0 7px rgba(232, 40, 63, 0.9); animation: enrCityGlow 2.6s ease-in-out 1.6s infinite;"></span>
+                                        <span style="display: block; font-size: 7px; font-weight: 800; color: rgb(253, 243, 234); margin-top: 2px; white-space: nowrap; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);">Pune</span>
+                                    </span>
+                                    <span style="position: absolute; left: 50%; top: 86%; transform: translate(-50%, -50%); text-align: center;">
+                                        <span style="position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgb(232, 40, 63); animation: enrCityPing 3s ease-out 2s infinite;"></span>
+                                        <span style="position: relative; display: block; width: 5.5px; height: 5.5px; margin: 0px auto; border-radius: 50%; background: rgb(232, 40, 63); box-shadow: 0 0 7px rgba(232, 40, 63, 0.9); animation: enrCityGlow 2.6s ease-in-out 2s infinite;"></span>
+                                        <span style="display: block; font-size: 7px; font-weight: 800; color: rgb(253, 243, 234); margin-top: 2px; white-space: nowrap; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);">Bengaluru</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="color: rgb(255, 255, 255); font-size: 13px; font-weight: 700; margin-bottom: 14px;">Explore</div>
+                            <div style="margin-bottom: 10px;"><a href="/salon/stores" style="color: rgb(179, 179, 179); font-size: 13.5px; text-decoration: none;">Stores</a></div>
+                            <div style="margin-bottom: 10px;"><a href="/salon/booking" style="color: rgb(179, 179, 179); font-size: 13.5px; text-decoration: none;">Book Now</a></div>
+                            <div style="margin-bottom: 10px;"><a href="/salon/membership" style="color: rgb(179, 179, 179); font-size: 13.5px; text-decoration: none;">Membership</a></div>
+                            <div style="margin-bottom: 10px;"><a href="/salon/services" style="color: rgb(179, 179, 179); font-size: 13.5px; text-decoration: none;">Services</a></div>
+                            <div style="margin-bottom: 10px;"><a href="/salon/stylists" style="color: rgb(179, 179, 179); font-size: 13.5px; text-decoration: none;">Stylists</a></div>
+                            <div style="margin-bottom: 10px;"><a href="/salon/about" style="color: rgb(179, 179, 179); font-size: 13.5px; text-decoration: none;">About</a></div>
+                            <div style="margin-bottom: 10px;"><a href="/salon/contact" style="color: rgb(179, 179, 179); font-size: 13.5px; text-decoration: none;">Contact</a></div>
+                        </div>
+                        <div>
+                            <div style="color: rgb(255, 255, 255); font-size: 13px; font-weight: 700; margin-bottom: 14px;">Contact</div>
+                            <div style="font-size: 13.5px; margin-bottom: 8px;">1800-266-5300 (Toll Free)</div>
+                            <div style="font-size: 13.5px; margin-bottom: 16px;">care@enrichbeauty.com</div>
+                            <div style="display: flex; gap: 10px;">
+                                <span style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700;">IG</span>
+                                <span style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700;">FB</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; font-size: 12px; color: rgb(118, 118, 118);">© 2026 Enrich Hair and Skin Solutions Pvt. Ltd. All rights reserved.</div>
+                </div>
+            </footer>
+        </xpath>
+    </template>
+
+    <!-- Editorial hero above the product grid, plus the membership strip below it. -->
+    <template id="bsi_shop_hero" inherit_id="website_sale.products" name="Enrich: shop hero">
+        <xpath expr="//div[@id='wrap']" position="before">
+            <section class="enr-shop-hero">
+                <div class="container enr-shop-hero__inner">
+                    <div class="enr-shop-hero__eyebrow">THE ENRICH SHELF</div>
+                    <h1 class="enr-shop-hero__title">Salon-grade care,<br/><em>taken home.</em></h1>
+                    <p class="enr-shop-hero__sub">
+                        The same professional lines our stylists reach for at the chair —
+                        Kérastase, L'Oréal Professionnel, Redken, Moroccanoil and Thalgo —
+                        so the result you walk out with is the one you keep.
+                    </p>
+                    <div class="enr-shop-hero__pills">
+                        <span class="enr-shop-hero__pill"><i>✦</i> 100% authentic, salon-sourced</span>
+                        <span class="enr-shop-hero__pill"><i>✦</i> Free delivery over ₹1,500</span>
+                        <span class="enr-shop-hero__pill"><i>✦</i> Members earn cashback on every order</span>
+                    </div>
+                </div>
+            </section>
+        </xpath>
+        <xpath expr="//div[@id='wrap']" position="inside">
+            <div class="container">
+                <div class="enr-shop-member">
+                    <div>
+                        <div class="enr-shop-member__eyebrow">GOLD MEMBERSHIP</div>
+                        <h3 class="enr-shop-member__title">Members get 20% off retail, every order.</h3>
+                        <p class="enr-shop-member__sub">Plus priority booking, free spa add-ons and a loyalty wallet you can spend here.</p>
+                    </div>
+                    <a href="/salon/membership" class="enr-shop-member__cta">See membership</a>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

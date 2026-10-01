@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Enrich shop theming.
+
+        These inherit Odoo's own eCommerce views, so the xpath targets have to be
+        nodes that are stable across versions. Both shop additions anchor to
+        `div#wrap` — the frontend page wrapper — rather than to inner grid or
+        pager markup, whose classes Odoo renames between releases. A missing
+        xpath target raises at install time and blocks the whole module, so the
+        safest anchor wins over the most precise one.
+    -->
+
+    <!-- Enrich brand fonts on every frontend page, so the shop matches the site. Also
+         carries the handful of animation/hover rules the ported header and footer below
+         rely on (see bsi_website_header/bsi_website_footer) — lifted verbatim off /salon's
+         own served page, where the design tool that exports it puts every OTHER style
+         inline on the element itself, but keyframes and :hover can't be expressed inline.
+
+         PHASE 6 DEV — also loads bsi_nav_dropdown.css, the ONE navbar stylesheet shared
+         with /salon's own exported page (see that file's own header comment): the classes
+         bsi_website_header below renders (.bsi-navi, .bsi-subm, .bsi-sublink, ...) are
+         styled from there, not from anything in this <style> block. -->
+    <template id="bsi_shop_fonts" inherit_id="website.layout" name="Enrich: brand fonts">
+        <xpath expr="//head" position="inside">
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+            <link rel="stylesheet"
+                  href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,600&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap"/>
+            <style>
+                .enr-nav-cta:hover { box-shadow: 0 6px 20px rgba(232, 40, 63, .45) !important; transform: translateY(-1px) !important; }
+                @keyframes enrCityPing {
+                    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.9; }
+                    100% { transform: translate(-50%, -50%) scale(3.2); opacity: 0; }
+                }
+                @keyframes enrCityGlow {
+                    0%, 100% { opacity: 0.5; }
+                    50% { opacity: 1; }
+                }
+                @keyframes enrRouteDraw {
+                    100% { stroke-dashoffset: 0; }
+                }
+            </style>
+        </xpath>
+    </template>
+
+    <!-- The real site header/footer, swapped in for the stock Odoo ones everywhere the
+         site is server-rendered (shop, cart, checkout, contact, portal...) — /salon
+         itself never uses this layout at all (see bsi_salon_web.main's own docstring: it
+         serves one self-contained exported page, header/footer included), so this is
+         purely for every OTHER frontend page, which until now fell back to Odoo's own
+         generic default theme instead of matching the site around it.
+
+         PHASE 6 DEV — this had drifted badly out of step with /salon's own navbar (see
+         enrich_patches.py's own NAV_* patches): no Services/Stores/Membership dropdowns,
+         and no door at all into the signed-in visitor's own account, dashboard or history
+         — exactly the "some of the menus don't show" gap reported on /shop. Rebuilt to
+         match: same `.bsi-navi`/`.bsi-subm` markup and the same shared stylesheet (see
+         bsi_shop_fonts above and bsi_nav_dropdown.css's own header comment), fed from the
+         SAME live records the SPA's own dropdowns read (bsi.enrich.data's own
+         _bsi_cities/_bsi_services/_bsi_tiers) rather than a second guess at that data.
+         The one real difference from the SPA: everything here is a plain <a href="...">
+         to a real /salon/<page> route (a static Odoo view has no in-app router to hand a
+         click to) — Services/Stores links carry ?cat=/?city= so the SPA opens on the
+         right category/city rather than always its own default (see main.py's
+         NAV_INITIAL_DST reading them back on mount). The account cluster is resolved
+         server-side off request.env.user instead of the SPA's own runtime fetch to
+         /salon/api/user_status, since this template already renders per-request with the
+         real signed-in user in scope. -->
+    <!-- The header markup itself, as one callable template: website.layout pages get it
+         through bsi_website_header below, and the themed account/history pages
+         (bsi_salon_account_templates.xml's bsi_account_layout, a standalone document
+         outside website.layout) t-call it directly — so every server-rendered page
+         carries the exact same menus, dropdowns and account cluster. -->
+    <template id="bsi_site_header" name="Enrich: site header markup">
+        <t t-set="bsi_nav_cities" t-value="request.env['bsi.enrich.data'].sudo()._bsi_cities()"/>
+        <t t-set="bsi_nav_services" t-value="request.env['bsi.enrich.data'].sudo()._bsi_services()"/>
+        <t t-set="bsi_nav_tiers" t-value="request.env['bsi.enrich.data'].sudo()._bsi_tiers()"/>
+        <!-- Same five category ids/labels the SPA's own bsiNavServiceCats carries
+             (see enrich_patches.py's NAV_ITEMS_COMPUTE_DST) — kept as a matching
+             literal here rather than a shared constant for the same reason the
+             footer's own link list already duplicates the nav's: two small, stable,
+             hand-authored menus, not worth a cross-module import for. -->
+        <t t-set="bsi_nav_cat_defs" t-value="[
+            {'id': 'hair', 'label': 'Hair'}, {'id': 'skin', 'label': 'Skin'},
+            {'id': 'makeup', 'label': 'Makeup'}, {'id': 'waxing', 'label': 'Waxing &amp; Threading'},
+            {'id': 'handsfeet', 'label': 'Hands &amp; Feet'},
+        ]"/>
+        <t t-set="bsi_nav_cats" t-value="[c for c in bsi_nav_cat_defs if bsi_nav_services.get(c['id'])]"/>
+        <t t-set="bsi_user" t-value="request.env.user"/>
+        <t t-set="bsi_logged_in" t-value="not bsi_user._is_public()"/>
+        <t t-set="bsi_is_admin" t-value="bsi_logged_in and bsi_user.has_group('base.group_system')"/>
+        <t t-set="bsi_acc_name" t-value="(bsi_user.partner_id.name or bsi_user.name or '') if bsi_logged_in else ''"/>
+        <t t-set="bsi_acc_label"
+           t-value="(bsi_acc_name[:11] + '…') if len(bsi_acc_name) > 12 else (bsi_acc_name or 'My Account')"/>
+        <t t-set="bsi_on_shop" t-value="(request.httprequest.path or '').startswith('/shop')"/>
+        <header id="top" data-anchor="true" class="bsi-nav-shell" style="position: sticky; top: 0px; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 16px 48px; background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(20, 17, 17, 0.08); box-shadow: 0 2px 16px rgba(20, 17, 17, 0.05);">
+            <a href="/salon" style="display: flex; align-items: flex-start; gap: 4px; text-decoration: none;">
+                <div style="position: relative;">
+                    <span style="font-family: 'Playfair Display', serif; font-weight: 500; font-size: 26px; color: rgb(22, 18, 19); letter-spacing: 0.5px;">enr<span style="position: relative;">i<span style="position: absolute; top: -13px; left: 1px; color: rgb(232, 40, 63); font-size: 9px;">♥</span></span>ch</span>
+                    <div style="font-size: 9.5px; font-style: italic; color: rgb(118, 118, 118); letter-spacing: 0.2px; margin-top: -4px;">love begins with you</div>
+                </div>
+            </a>
+            <div style="display: flex; align-items: center; gap: 14px; min-width: 0px;">
+                <div style="display: flex; align-items: center; gap: 18px; flex-wrap: wrap; min-width: 0px;">
+                    <div class="bsi-navi">
+                        <a href="/salon/home" class="bsi-nav-trigger" style="color: rgb(44, 44, 44); font-weight: 600;">Home</a>
+                    </div>
+                    <div class="bsi-navi">
+                        <a href="/salon/stores" class="bsi-nav-trigger" style="color: rgb(44, 44, 44); font-weight: 600;">Stores<span class="bsi-caret">▾</span></a>
+                        <div class="bsi-subm">
+                            <div class="bsi-sub-group">Stores</div>
+                            <a t-foreach="bsi_nav_cities" t-as="bsi_city" class="bsi-sublink"
+                               t-att-href="'/salon/stores?city=%s' % bsi_city['id']">
+                                <span t-esc="bsi_city['name']"/>
+                                <small t-esc="len(bsi_city['branches'])"/>
+                            </a>
+                            <div class="bsi-sub-divider"></div>
+                            <a href="/salon/stores" class="bsi-sublink">See every branch →</a>
+                        </div>
+                    </div>
+                    <div class="bsi-navi">
+                        <a href="/salon/booking" class="bsi-nav-trigger" style="color: rgb(44, 44, 44); font-weight: 600;">Book Now</a>
+                    </div>
+                    <div class="bsi-navi">
+                        <a href="/salon/membership" class="bsi-nav-trigger" style="color: rgb(44, 44, 44); font-weight: 600;">Membership<span class="bsi-caret">▾</span></a>
+                        <div class="bsi-subm">
+                            <div class="bsi-sub-group">Membership</div>
+                            <a t-foreach="bsi_nav_tiers" t-as="bsi_tier" href="/salon/membership" class="bsi-sublink">
+                                <span t-esc="bsi_tier['name']"/>
+                                <small t-esc="'₹%s/yr' % (bsi_tier.get('yearly') or bsi_tier.get('monthly') or 0)"/>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="bsi-navi">
+                        <a href="/salon/services" class="bsi-nav-trigger" style="color: rgb(44, 44, 44); font-weight: 600;">Services<span class="bsi-caret">▾</span></a>
+                        <div class="bsi-subm">
+                            <div class="bsi-sub-group">Services</div>
+                            <a t-foreach="bsi_nav_cats" t-as="bsi_cat" class="bsi-sublink"
+                               t-att-href="'/salon/services?cat=%s' % bsi_cat['id']">
+                                <span t-esc="bsi_cat['label']"/>
+                                <small t-esc="len(bsi_nav_services.get(bsi_cat['id'], []))"/>
+                            </a>
+                            <div class="bsi-sub-divider"></div>
+                            <a href="/salon/services" class="bsi-sublink">Browse all services →</a>
+                        </div>
+                    </div>
+                    <div class="bsi-navi">
+                        <a href="/salon/stylists" class="bsi-nav-trigger" style="color: rgb(44, 44, 44); font-weight: 600;">Artists</a>
+                    </div>
+                    <div class="bsi-navi">
+                        <a href="/salon/about" class="bsi-nav-trigger" style="color: rgb(44, 44, 44); font-weight: 600;">About</a>
+                    </div>
+                    <div class="bsi-navi">
+                        <a href="/salon/contact" class="bsi-nav-trigger" style="color: rgb(44, 44, 44); font-weight: 600;">Contact</a>
+                    </div>
+                    <div class="bsi-navi">
+                        <a href="/shop" class="bsi-nav-trigger"
+                           t-attf-style="color: rgb(22, 18, 19); font-weight: #{bsi_on_shop and 800 or 600};">Shop</a>
+                    </div>
+                </div>
+                <t t-if="bsi_logged_in">
+                    <div class="bsi-navi bsi-navi-right">
+                        <button class="bsi-account-trigger" type="button">
+                            <span class="bsi-account-dot"></span>
+                            <span t-esc="bsi_acc_label"/>
+                            <span class="bsi-caret">▾</span>
+                        </button>
+                        <div class="bsi-subm">
+                            <div class="bsi-sub-group">Signed in</div>
+                            <t t-if="bsi_is_admin">
+                                <a href="/salon/dashboard" class="bsi-sublink">
+                                    <span>Salon Dashboard</span><small>Admin</small>
+                                </a>
+                                <div class="bsi-sub-divider"></div>
+                            </t>
+                            <a href="/salon/my/appointments" class="bsi-sublink"><span>Booking History</span></a>
+                            <a href="/salon/my/orders" class="bsi-sublink"><span>Order History</span></a>
+                            <div class="bsi-sub-divider"></div>
+                            <a href="/web/session/logout?redirect=/salon" class="bsi-sublink is-danger"><span>Log out</span></a>
+                        </div>
+                    </div>
+                </t>
+                <t t-else="">
+                    <a href="/web/login?redirect=/salon" class="bsi-nav-login">Log in</a>
+                </t>
+                <a href="/salon/booking" class="enr-nav-cta" style="display: inline-block; background: rgb(232, 40, 63); color: rgb(255, 255, 255); border: none; padding: 11px 24px; border-radius: 4px; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 0.3px; box-shadow: 0 4px 14px rgba(232, 40, 63, 0.35); transition: box-shadow 0.2s, transform 0.2s; flex-shrink: 0; text-decoration: none;">Book Now</a>
+            </div>
+        </header>
+    </template>
+
+    <template id="bsi_website_header" inherit_id="website.layout" name="Enrich: real site header">
+        <xpath expr="//header" position="replace">
+            <t t-call="bsi_salon_web.bsi_site_header"/>
+        </xpath>
+    </template>
+
+    <template id="bsi_website_footer" inherit_id="website.layout" name="Enrich: real site footer">
+        <xpath expr="//footer" position="replace">
+            <footer id="bottom" data-anchor="true" class="bsi-foot">
+                <div class="bsi-foot__glow" aria-hidden="true"></div>
+                <div class="bsi-foot__main">
+                  <div class="bsi-foot__brand">
+                    <div class="bsi-foot__logo">enr<span class="bsi-foot__i">i<svg class="bsi-foot__heart" viewBox="0 0 24 22" aria-hidden="true"><path fill="#e8283f" d="M12 21.5 10.3 20C4.2 14.5.5 11.2.5 7 .5 3.7 3.1 1 6.5 1c1.9 0 3.8.9 5 2.4C12.7 1.9 14.6 1 16.5 1c3.4 0 6 2.7 6 6 0 4.2-3.7 7.5-9.8 13L12 21.5z"/></svg></span>ch</div>
+                    <div class="bsi-foot__tagline">love begins with you</div>
+                    <p class="bsi-foot__about">India's leading salon chain since 1997 — hair, skin, makeup and wellness across 100+ locations.</p>
+                    <ul class="bsi-foot__contact">
+                      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg><span>100+ salons across India</span></li>
+                      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1l-2.2 2.23Z"/></svg><a class="bsi-foot__tel" t-att-href="'tel:%s' % (res_company.phone or '18002665300').replace(' ', '')" t-out="res_company.phone or '1800-266-5300 (Toll Free)'"/></li>
+                      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm8 7.2L20 6H4l8 5.2ZM4 8.3V18h16V8.3l-8 5.2-8-5.2Z"/></svg><a class="bsi-foot__tel" t-att-href="'mailto:%s' % (res_company.email or 'care@enrichbeauty.com')" t-out="res_company.email or 'care@enrichbeauty.com'"/></li>
+                    </ul>
+                    <div class="bsi-foot__social">
+                      <span class="bsi-foot__soc" title="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 7.3A4.7 4.7 0 1 0 16.7 12 4.7 4.7 0 0 0 12 7.3Zm0 7.7a3 3 0 1 1 3-3 3 3 0 0 1-3 3Zm6-7.9a1.1 1.1 0 1 1-1.1-1.1A1.1 1.1 0 0 1 18 7.1ZM21.9 8c-.1-1.6-.4-3-1.6-4.2S17.6 2.2 16 2.1C14.4 2 9.6 2 8 2.1 6.4 2.2 5 2.5 3.8 3.7S2.2 6.4 2.1 8C2 9.6 2 14.4 2.1 16c.1 1.6.4 3 1.6 4.2s2.6 1.5 4.2 1.6c1.6.1 6.4.1 8 0 1.6-.1 3-.4 4.2-1.6s1.5-2.6 1.6-4.2c.1-1.6.1-6.4 0-8Zm-2.1 9.7a3.3 3.3 0 0 1-1.8 1.8c-1.3.5-4.3.4-5.7.4s-4.4.1-5.7-.4a3.3 3.3 0 0 1-1.8-1.8c-.5-1.3-.4-4.3-.4-5.7s-.1-4.4.4-5.7a3.3 3.3 0 0 1 1.8-1.8c1.3-.5 4.3-.4 5.7-.4s4.4-.1 5.7.4a3.3 3.3 0 0 1 1.8 1.8c.5 1.3.4 4.3.4 5.7s.1 4.4-.4 5.7Z"/></svg></span>
+                      <span class="bsi-foot__soc" title="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 8.5V6.8c0-.8.2-1.3 1.4-1.3H17V2.3A22 22 0 0 0 14.6 2C12.2 2 10.6 3.5 10.6 6.2v2.3H8V12h2.6v10H14V12h2.7l.4-3.5H14Z"/></svg></span>
+                    </div>
+                  </div>
+                  <div class="bsi-foot__nav">
+                    <div class="bsi-foot__col">
+                      <h4 class="bsi-foot__h">Quick Links</h4>
+                      <a class="bsi-foot__link" href="/salon/stores"><svg class="bsi-foot__chev" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.3 5.3 8 6.6l5.4 5.4L8 17.4l1.3 1.3 6.7-6.7-6.7-6.7Z"/></svg><span>Stores</span></a>
+                      <a class="bsi-foot__link" href="/salon/booking"><svg class="bsi-foot__chev" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.3 5.3 8 6.6l5.4 5.4L8 17.4l1.3 1.3 6.7-6.7-6.7-6.7Z"/></svg><span>Book Now</span></a>
+                      <a class="bsi-foot__link" href="/salon/membership"><svg class="bsi-foot__chev" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.3 5.3 8 6.6l5.4 5.4L8 17.4l1.3 1.3 6.7-6.7-6.7-6.7Z"/></svg><span>Membership</span></a>
+                      <a class="bsi-foot__link" href="/salon/services"><svg class="bsi-foot__chev" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.3 5.3 8 6.6l5.4 5.4L8 17.4l1.3 1.3 6.7-6.7-6.7-6.7Z"/></svg><span>Services</span></a>
+                      <a class="bsi-foot__link" href="/salon/stylists"><svg class="bsi-foot__chev" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.3 5.3 8 6.6l5.4 5.4L8 17.4l1.3 1.3 6.7-6.7-6.7-6.7Z"/></svg><span>Artists</span></a>
+                      <a class="bsi-foot__link" href="/salon/about"><svg class="bsi-foot__chev" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.3 5.3 8 6.6l5.4 5.4L8 17.4l1.3 1.3 6.7-6.7-6.7-6.7Z"/></svg><span>About</span></a>
+                      <a class="bsi-foot__link" href="/salon/contact"><svg class="bsi-foot__chev" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.3 5.3 8 6.6l5.4 5.4L8 17.4l1.3 1.3 6.7-6.7-6.7-6.7Z"/></svg><span>Contact</span></a>
+                    </div>
+                    <div class="bsi-foot__col">
+                      <h4 class="bsi-foot__h">Our Cities</h4>
+                      <a class="bsi-foot__link" href="/salon/stores"><svg class="bsi-foot__chev" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.3 5.3 8 6.6l5.4 5.4L8 17.4l1.3 1.3 6.7-6.7-6.7-6.7Z"/></svg><span>Ahmedabad</span></a>
+                      <a class="bsi-foot__link" href="/salon/stores"><svg class="bsi-foot__chev" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.3 5.3 8 6.6l5.4 5.4L8 17.4l1.3 1.3 6.7-6.7-6.7-6.7Z"/></svg><span>Vadodara</span></a>
+                      <a class="bsi-foot__link" href="/salon/stores"><svg class="bsi-foot__chev" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.3 5.3 8 6.6l5.4 5.4L8 17.4l1.3 1.3 6.7-6.7-6.7-6.7Z"/></svg><span>Surat</span></a>
+                      <a class="bsi-foot__link" href="/salon/stores"><svg class="bsi-foot__chev" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.3 5.3 8 6.6l5.4 5.4L8 17.4l1.3 1.3 6.7-6.7-6.7-6.7Z"/></svg><span>Mumbai</span></a>
+                      <a class="bsi-foot__link" href="/salon/stores"><svg class="bsi-foot__chev" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.3 5.3 8 6.6l5.4 5.4L8 17.4l1.3 1.3 6.7-6.7-6.7-6.7Z"/></svg><span>Pune</span></a>
+                      <a class="bsi-foot__link" href="/salon/stores"><svg class="bsi-foot__chev" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.3 5.3 8 6.6l5.4 5.4L8 17.4l1.3 1.3 6.7-6.7-6.7-6.7Z"/></svg><span>Bengaluru</span></a>
+                    </div>
+                    <div class="bsi-foot__network">
+                      <h4 class="bsi-foot__h">Our Network</h4>
+                      <div class="bsi-foot__map">
+                        <div class="bsi-foot__map-grid"></div>
+                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="bsi-foot__map-svg">
+                          <path d="M30 12 L46 8 L58 16 L54 30 L64 38 L60 52 L70 62 L62 76 L48 88 L38 78 L30 60 L22 44 L26 26 Z" fill="rgba(253,243,234,.05)" stroke="rgba(201,161,90,.28)" stroke-width="0.6"/>
+                          <g stroke="rgba(232,40,63,.45)" stroke-width="0.6" fill="none" stroke-linecap="round" stroke-dasharray="60" stroke-dashoffset="60">
+                              <path d="M33,27 L39,40" style="animation: enrRouteDraw 2.4s ease-out 0.2s 1 forwards;"/>
+                              <path d="M39,40 L36,52" style="animation: enrRouteDraw 2.4s ease-out 0.5s 1 forwards;"/>
+                              <path d="M36,52 L33,66" style="animation: enrRouteDraw 2.4s ease-out 0.8s 1 forwards;"/>
+                              <path d="M33,66 L44,72" style="animation: enrRouteDraw 2.4s ease-out 1.1s 1 forwards;"/>
+                              <path d="M44,72 L50,86" style="animation: enrRouteDraw 2.4s ease-out 1.4s 1 forwards;"/>
+                          </g>
+                        </svg>
+                          <a class="bsi-foot__pin" href="/salon/stores" style="left:33%;top:27%;">
+                            <span class="bsi-foot__pin-ring" style="animation: enrCityPing 3s ease-out 0s infinite;"></span>
+                            <span class="bsi-foot__pin-dot" style="animation: enrCityGlow 2.6s ease-in-out 0s infinite;"></span>
+                            <span class="bsi-foot__pin-name">Ahmedabad</span>
+                          </a>
+                          <a class="bsi-foot__pin" href="/salon/stores" style="left:39%;top:40%;">
+                            <span class="bsi-foot__pin-ring" style="animation: enrCityPing 3s ease-out 0.4s infinite;"></span>
+                            <span class="bsi-foot__pin-dot" style="animation: enrCityGlow 2.6s ease-in-out 0.4s infinite;"></span>
+                            <span class="bsi-foot__pin-name">Vadodara</span>
+                          </a>
+                          <a class="bsi-foot__pin" href="/salon/stores" style="left:36%;top:52%;">
+                            <span class="bsi-foot__pin-ring" style="animation: enrCityPing 3s ease-out 0.8s infinite;"></span>
+                            <span class="bsi-foot__pin-dot" style="animation: enrCityGlow 2.6s ease-in-out 0.8s infinite;"></span>
+                            <span class="bsi-foot__pin-name">Surat</span>
+                          </a>
+                          <a class="bsi-foot__pin" href="/salon/stores" style="left:33%;top:66%;">
+                            <span class="bsi-foot__pin-ring" style="animation: enrCityPing 3s ease-out 1.2s infinite;"></span>
+                            <span class="bsi-foot__pin-dot" style="animation: enrCityGlow 2.6s ease-in-out 1.2s infinite;"></span>
+                            <span class="bsi-foot__pin-name">Mumbai</span>
+                          </a>
+                          <a class="bsi-foot__pin" href="/salon/stores" style="left:44%;top:72%;">
+                            <span class="bsi-foot__pin-ring" style="animation: enrCityPing 3s ease-out 1.6s infinite;"></span>
+                            <span class="bsi-foot__pin-dot" style="animation: enrCityGlow 2.6s ease-in-out 1.6s infinite;"></span>
+                            <span class="bsi-foot__pin-name">Pune</span>
+                          </a>
+                          <a class="bsi-foot__pin" href="/salon/stores" style="left:50%;top:86%;">
+                            <span class="bsi-foot__pin-ring" style="animation: enrCityPing 3s ease-out 2s infinite;"></span>
+                            <span class="bsi-foot__pin-dot" style="animation: enrCityGlow 2.6s ease-in-out 2s infinite;"></span>
+                            <span class="bsi-foot__pin-name">Bengaluru</span>
+                          </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="bsi-foot__bar">
+                  <span>© 2026 Enrich Hair and Skin Solutions Pvt. Ltd. All rights reserved.</span>
+                  <span class="bsi-foot__bar-right">Hair · Skin · Makeup · Wellness</span>
+                </div>
+              </footer>
+        </xpath>
+    </template>
+
+    <!-- Editorial hero above the product grid, plus the membership strip below it. -->
+    <template id="bsi_shop_hero" inherit_id="website_sale.products" name="Enrich: shop hero">
+        <xpath expr="//div[@id='wrap']" position="before">
+            <section class="enr-shop-hero">
+                <div class="container enr-shop-hero__inner">
+                    <div class="enr-shop-hero__eyebrow">THE ENRICH SHELF</div>
+                    <h1 class="enr-shop-hero__title">Salon-grade care,<br/><em>taken home.</em></h1>
+                    <p class="enr-shop-hero__sub">
+                        The same professional lines our artists reach for at the chair —
+                        Kérastase, L'Oréal Professionnel, Redken, Moroccanoil and Thalgo —
+                        so the result you walk out with is the one you keep.
+                    </p>
+                    <div class="enr-shop-hero__pills">
+                        <span class="enr-shop-hero__pill"><i>✦</i> 100% authentic, salon-sourced</span>
+                        <span class="enr-shop-hero__pill"><i>✦</i> Free delivery over ₹1,500</span>
+                        <span class="enr-shop-hero__pill"><i>✦</i> Members earn cashback on every order</span>
+                    </div>
+                </div>
+            </section>
+        </xpath>
+        <xpath expr="//div[@id='wrap']" position="inside">
+            <div class="container">
+                <div class="enr-shop-member">
+                    <div>
+                        <div class="enr-shop-member__eyebrow">GOLD MEMBERSHIP</div>
+                        <h3 class="enr-shop-member__title">Members get 20% off retail, every order.</h3>
+                        <p class="enr-shop-member__sub">Plus priority booking, free spa add-ons and a loyalty wallet you can spend here.</p>
+                    </div>
+                    <a href="/salon/membership" class="enr-shop-member__cta">See membership</a>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

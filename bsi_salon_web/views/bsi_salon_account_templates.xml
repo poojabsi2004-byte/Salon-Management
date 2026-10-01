@@ -1,0 +1,678 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- PHASE 6 DEV — the customer's own history, wearing the Enrich site's design.
+
+         Standalone documents rather than website.layout/portal.portal_layout: the
+         Enrich site is one self-contained HTML asset with its own navbar, palette and
+         type (see controllers/main.py), never the stock website builder, so inheriting
+         Odoo's frontend chrome here would put a completely different header, footer and
+         Bootstrap type scale around pages a customer reaches straight from that navbar.
+         Everything below reuses the site's own tokens — crimson #e8283f on ink #161213,
+         cream #fdf3ea, Playfair Display headings over Manrope body — so the account
+         pages read as part of the same site. The header is the site's real one
+         (bsi_shop_templates.xml's bsi_site_header), t-called rather than copied, so
+         the history pages carry every menu and dropdown the rest of the site does.
+
+         bsi_salon_backend's standard /my/appointments portal page is untouched and
+         still works; these are a second, themed door to the same records. -->
+
+    <template id="bsi_account_layout" name="Enrich Account Layout">&lt;!DOCTYPE html&gt;
+        <html t-att-lang="(request.env.lang or 'en_US').replace('_', '-')">
+        <head>
+            <meta charset="utf-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+            <title><t t-out="bsi_page_title or 'My Account'"/> · Enrich Beauty</title>
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+            <link rel="stylesheet"
+                  href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Playfair+Display:wght@400;500;600&amp;display=swap"/>
+            <link rel="stylesheet" href="/bsi_salon_web/static/src/css/bsi_nav_dropdown.css?v=4"/>
+            <style>
+                /* The header's Book Now hover (inline styles can't carry :hover). */
+                .enr-nav-cta:hover{box-shadow:0 6px 20px rgba(232,40,63,.45) !important;transform:translateY(-1px) !important;}
+                /* The site's own tokens. Declared once here so every card, badge and
+                   table below reads from the same palette the booking flow does. */
+                :root{
+                  --enr-ink:#161213; --enr-ink-2:#241b1e; --enr-ink-3:#0c0a0b;
+                  --enr-red:#e8283f; --enr-red-dark:#8a2332; --enr-cream:#fdf3ea;
+                  --enr-gold:#c9a15a; --enr-green:#3ddc84;
+                  --enr-grey:#767676; --enr-grey-2:#a79a9d; --enr-line:rgba(20,17,17,.1);
+                }
+                *{box-sizing:border-box;}
+                html,body{margin:0;padding:0;}
+                body{
+                  font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+                  background:#faf6f2; color:var(--enr-ink);
+                  -webkit-font-smoothing:antialiased;
+                }
+                a{color:inherit;}
+                .enr-cta{
+                  background:var(--enr-red);color:#fff;border:none;padding:11px 24px;
+                  border-radius:4px;font-size:14px;font-weight:700;letter-spacing:.3px;
+                  text-decoration:none;box-shadow:0 4px 14px rgba(232,40,63,.35);
+                  transition:box-shadow .2s,transform .2s;white-space:nowrap;
+                }
+                .enr-cta:hover{box-shadow:0 6px 20px rgba(232,40,63,.45);transform:translateY(-1px);}
+
+                .enr-hero{
+                  background:linear-gradient(150deg,var(--enr-ink-2),#141013 62%,var(--enr-ink-3));
+                  color:var(--enr-cream);padding:46px 48px 74px;
+                }
+                .enr-wrap{max-width:1080px;margin:0 auto;}
+                .enr-eyebrow{font-size:11px;font-weight:800;letter-spacing:2px;color:var(--enr-red);
+                  margin-bottom:10px;}
+                .enr-hero h1{font-family:'Playfair Display',serif;font-weight:600;font-size:40px;
+                  line-height:1.08;margin:0 0 8px;}
+                .enr-hero p{margin:0;font-size:14px;color:var(--enr-grey-2);}
+
+                /* Pills rather than folder tabs: they sit on the dark hero, and a
+                   folder tab only lines up with the card below it when it happens to
+                   be the first one — with Orders selected the card's square corner
+                   ended up under the wrong tab. Selected is cream-on-ink, the same
+                   inversion the booking wizard's own category pills use, and
+                   deliberately not crimson so the one red thing on the page stays
+                   the Book Now CTA. */
+                .enr-tabs{display:flex;gap:9px;margin:-52px auto 22px;max-width:1080px;
+                  padding:0 48px;position:relative;z-index:2;flex-wrap:wrap;}
+                .enr-tab{
+                  background:rgba(253,243,234,.12);border:1px solid rgba(253,243,234,.22);
+                  border-radius:999px;padding:10px 22px;font-size:13px;font-weight:700;
+                  color:#e3dbdd;text-decoration:none;backdrop-filter:blur(6px);
+                  transition:background .2s,color .2s,border-color .2s;
+                }
+                .enr-tab:hover{background:rgba(253,243,234,.22);color:#fff;}
+                .enr-tab.is-on{background:var(--enr-cream);color:var(--enr-ink);
+                  border-color:var(--enr-cream);
+                  box-shadow:0 10px 26px -14px rgba(0,0,0,.85);}
+
+                .enr-main{max-width:1080px;margin:0 auto;padding:0 48px 70px;}
+                .enr-card{background:#fff;border:1px solid var(--enr-line);border-radius:18px;
+                  box-shadow:0 12px 40px -24px rgba(20,17,17,.35);overflow:hidden;}
+
+                table.enr-table{width:100%;border-collapse:collapse;}
+                .enr-table th{
+                  text-align:left;font-size:9.5px;letter-spacing:1.5px;color:var(--enr-grey-2);
+                  font-weight:800;padding:16px 18px;border-bottom:1px solid var(--enr-line);
+                  background:rgba(20,17,17,.02);white-space:nowrap;
+                }
+                .enr-table td{padding:16px 18px;border-bottom:1px solid rgba(20,17,17,.06);
+                  font-size:13.5px;vertical-align:middle;}
+                .enr-table tbody tr:last-child td{border-bottom:none;}
+                .enr-table tbody tr{transition:background .18s;}
+                .enr-table tbody tr:hover{background:rgba(232,40,63,.03);}
+                .enr-ref{font-weight:800;color:var(--enr-ink);text-decoration:none;}
+                .enr-ref:hover{color:var(--enr-red);}
+                .enr-sub{display:block;font-size:11.5px;color:var(--enr-grey);margin-top:3px;}
+                .enr-amount{font-weight:800;white-space:nowrap;}
+                .enr-badge{
+                  display:inline-block;font-size:10px;font-weight:800;letter-spacing:.8px;
+                  padding:5px 11px;border-radius:999px;white-space:nowrap;
+                }
+
+                .enr-empty{padding:64px 30px;text-align:center;}
+                .enr-empty-mark{font-size:40px;color:rgba(232,40,63,.35);margin-bottom:14px;}
+                .enr-empty h3{font-family:'Playfair Display',serif;font-weight:600;font-size:23px;
+                  margin:0 0 8px;color:var(--enr-ink);}
+                .enr-empty p{margin:0 0 22px;font-size:13.5px;color:var(--enr-grey);
+                  line-height:1.6;}
+
+                .enr-pager{display:flex;justify-content:center;align-items:center;gap:7px;
+                  padding:20px;border-top:1px solid var(--enr-line);flex-wrap:wrap;}
+                .enr-page{min-width:34px;text-align:center;padding:7px 11px;border-radius:9px;
+                  font-size:12.5px;font-weight:700;color:#454545;text-decoration:none;
+                  border:1px solid var(--enr-line);}
+                .enr-page:hover{border-color:var(--enr-red);color:var(--enr-red);}
+                .enr-page.is-on{background:var(--enr-ink);color:var(--enr-cream);
+                  border-color:var(--enr-ink);}
+
+                /* Detail — the same dark "pass" language the booking ticket uses. */
+                .enr-pass{
+                  position:relative;border-radius:24px;overflow:hidden;
+                  background:linear-gradient(150deg,var(--enr-ink-2),#141013 62%,var(--enr-ink-3));
+                  box-shadow:0 34px 74px -32px rgba(12,10,12,.95);margin-bottom:26px;
+                }
+                .enr-pass-head{display:flex;align-items:center;justify-content:space-between;
+                  gap:14px;padding:22px 28px;border-bottom:1px dashed rgba(253,243,234,.24);
+                  flex-wrap:wrap;}
+                .enr-pass-logo{font-family:'Playfair Display',serif;font-size:22px;
+                  color:var(--enr-cream);}
+                .enr-pass-kicker{font-size:9px;font-weight:800;letter-spacing:1.8px;
+                  color:var(--enr-gold);border-left:1px solid rgba(201,161,90,.4);
+                  padding-left:11px;margin-left:11px;}
+                .enr-pass-body{padding:26px 28px;display:grid;
+                  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:20px 24px;}
+                .enr-field-label{font-size:9px;letter-spacing:1.6px;color:var(--enr-grey-2);
+                  margin-bottom:5px;}
+                .enr-field-value{font-size:14.5px;font-weight:700;color:var(--enr-cream);
+                  word-break:break-word;}
+                .enr-pass-foot{padding:20px 28px;border-top:1px solid rgba(253,243,234,.12);
+                  display:flex;justify-content:space-between;align-items:center;gap:14px;
+                  flex-wrap:wrap;}
+                .enr-total-label{font-size:11px;letter-spacing:1.4px;font-weight:700;
+                  color:#e3c9cd;}
+                .enr-total{font-family:'Playfair Display',serif;font-weight:600;font-size:28px;
+                  color:var(--enr-cream);}
+
+                .enr-panel{background:#fff;border:1px solid var(--enr-line);border-radius:18px;
+                  padding:24px 26px;margin-bottom:22px;
+                  box-shadow:0 12px 40px -26px rgba(20,17,17,.35);}
+                .enr-panel h2{font-family:'Playfair Display',serif;font-weight:600;font-size:21px;
+                  margin:0 0 16px;}
+                .enr-back{display:inline-block;margin-bottom:18px;font-size:13px;font-weight:700;
+                  color:var(--enr-grey);text-decoration:none;}
+                .enr-back:hover{color:var(--enr-red);}
+                .enr-totals{margin-left:auto;width:min(340px,100%);}
+                .enr-totals div{display:flex;justify-content:space-between;gap:16px;
+                  padding:7px 0;font-size:13.5px;}
+                .enr-totals .enr-grand{border-top:1px solid var(--enr-line);margin-top:6px;
+                  padding-top:12px;font-size:17px;font-weight:800;}
+
+                .enr-stars{display:flex;flex-direction:row-reverse;justify-content:flex-end;gap:4px;}
+                .enr-stars input{display:none;}
+                .enr-stars label{font-size:27px;color:rgba(20,17,17,.16);cursor:pointer;
+                  line-height:1;transition:color .15s;}
+                .enr-stars input:checked ~ label,
+                .enr-stars label:hover, .enr-stars label:hover ~ label{color:var(--enr-red);}
+                .enr-input{width:100%;border:1.5px solid rgba(20,17,17,.14);border-radius:12px;
+                  padding:13px 15px;font-size:14px;font-family:'Manrope',sans-serif;resize:vertical;}
+                .enr-input:focus{border-color:var(--enr-red);outline:none;
+                  box-shadow:0 0 0 4px rgba(232,40,63,.1);}
+                .enr-note{font-size:12.5px;color:var(--enr-grey);line-height:1.6;}
+
+                .enr-foot{padding:26px 48px;border-top:1px solid var(--enr-line);
+                  font-size:12px;color:var(--enr-grey);text-align:center;}
+
+                @media (max-width:820px){
+                  .enr-cta{padding:9px 16px;font-size:13px;}
+                  .enr-hero{padding:34px 18px 66px;}
+                  .enr-tabs{padding:0 18px;}
+                  .enr-main{padding:0 18px 54px;}
+                  .enr-hero h1{font-size:30px;}
+                  /* The tables carry six columns of real data; on a phone they scroll
+                     sideways inside the card rather than collapsing into unreadable
+                     wrapped cells. */
+                  .enr-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+                  .enr-table{min-width:660px;}
+                }
+            </style>
+        </head>
+        <body>
+            <!-- The site's real header — every menu, dropdown and the account cluster —
+                 shared with /shop and every other server-rendered page. -->
+            <t t-call="bsi_salon_web.bsi_site_header"/>
+
+            <header class="enr-hero">
+                <div class="enr-wrap">
+                    <div class="enr-eyebrow">MY ACCOUNT</div>
+                    <h1><t t-out="bsi_heading or 'Your history'"/></h1>
+                    <p><t t-out="bsi_subheading or ''"/></p>
+                </div>
+            </header>
+
+            <nav class="enr-tabs">
+                <a href="/salon/my/appointments"
+                   t-attf-class="enr-tab#{' is-on' if bsi_active_tab == 'appointments' else ''}">Bookings</a>
+                <a href="/salon/my/orders"
+                   t-attf-class="enr-tab#{' is-on' if bsi_active_tab == 'orders' else ''}">Orders</a>
+            </nav>
+
+            <main class="enr-main">
+                <t t-out="0"/>
+            </main>
+
+            <footer class="enr-foot">
+                Enrich Beauty · <a href="/salon/contact">Contact us</a>
+            </footer>
+        </body>
+        </html>
+    </template>
+
+    <!-- ══ Bookings / appointment history ══════════════════════════════════ -->
+    <template id="bsi_account_appointments" name="Enrich Account: Bookings">
+        <t t-call="bsi_salon_web.bsi_account_layout">
+            <t t-set="bsi_page_title">Bookings</t>
+            <t t-set="bsi_heading">Your bookings</t>
+            <t t-set="bsi_subheading">
+                <t t-if="pager['total']">
+                    <t t-out="pager['total']"/> appointment<t t-if="pager['total'] != 1">s</t> on record
+                </t>
+                <t t-else="">Every visit you book with us appears here.</t>
+            </t>
+
+            <div class="enr-card">
+                <t t-if="appointments">
+                    <div class="enr-scroll">
+                        <table class="enr-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Service</th>
+                                    <th>Artist</th>
+                                    <th>Status</th>
+                                    <th style="text-align:right;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="appointments" t-as="appointment">
+                                    <td>
+                                        <a class="enr-ref"
+                                           t-attf-href="/salon/my/appointments/#{appointment.id}">
+                                            <t t-out="appointment.bsi_preferred_date"
+                                               t-options="{'widget': 'date'}"/>
+                                        </a>
+                                        <span class="enr-sub"
+                                              t-out="appointment.bsi_location_id.name or 'Branch to be confirmed'"/>
+                                    </td>
+                                    <td t-out="bsi_appointment_time(appointment) or '—'"/>
+                                    <td>
+                                        <t t-set="services" t-value="bsi_appointment_services(appointment)"/>
+                                        <t t-out="services or '—'"/>
+                                    </td>
+                                    <td t-out="appointment.bsi_artist_id.name or 'Any available'"/>
+                                    <td>
+                                        <t t-set="status"
+                                           t-value="bsi_appointment_status.get(appointment.bsi_state, (appointment.bsi_state, '#a79a9d'))"/>
+                                        <span class="enr-badge"
+                                              t-attf-style="color:#{status[1]};background:#{status[1]}1f;"
+                                              t-out="status[0]"/>
+                                    </td>
+                                    <td class="enr-amount" style="text-align:right;"
+                                        t-out="bsi_money(appointment.bsi_amount_total)"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <t t-call="bsi_salon_web.bsi_account_pager"/>
+                </t>
+                <t t-else="">
+                    <div class="enr-empty">
+                        <div class="enr-empty-mark">✦</div>
+                        <h3>No bookings yet</h3>
+                        <p>Once you book a chair with us, every appointment — past and upcoming —<br/>
+                           shows up here with its services, artist and total.</p>
+                        <a href="/salon/booking" class="enr-cta">Book your first visit</a>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="bsi_account_appointment_detail" name="Enrich Account: Booking Detail">
+        <t t-call="bsi_salon_web.bsi_account_layout">
+            <t t-set="bsi_page_title">Booking</t>
+            <t t-set="bsi_heading">Booking details</t>
+            <t t-set="bsi_subheading">
+                <t t-out="appointment.bsi_location_id.name or 'Enrich Beauty'"/>
+            </t>
+            <t t-set="status"
+               t-value="bsi_appointment_status.get(appointment.bsi_state, (appointment.bsi_state, '#a79a9d'))"/>
+
+            <a href="/salon/my/appointments" class="enr-back">← All bookings</a>
+
+            <div class="enr-pass">
+                <div class="enr-pass-head">
+                    <div style="display:flex;align-items:center;">
+                        <span class="enr-pass-logo">enrich</span>
+                        <span class="enr-pass-kicker">APPOINTMENT</span>
+                    </div>
+                    <span class="enr-badge"
+                          t-attf-style="color:#{status[1]};background:#{status[1]}26;"
+                          t-out="status[0]"/>
+                </div>
+                <div class="enr-pass-body">
+                    <div>
+                        <div class="enr-field-label">DATE</div>
+                        <div class="enr-field-value">
+                            <t t-if="appointment.bsi_preferred_date"
+                               t-out="appointment.bsi_preferred_date" t-options="{'widget': 'date'}"/>
+                            <t t-else="">To be confirmed</t>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="enr-field-label">TIME</div>
+                        <div class="enr-field-value"
+                             t-out="bsi_appointment_time(appointment) or 'To be confirmed'"/>
+                    </div>
+                    <div>
+                        <div class="enr-field-label">BRANCH</div>
+                        <div class="enr-field-value"
+                             t-out="appointment.bsi_location_id.name or 'To be confirmed'"/>
+                    </div>
+                    <div>
+                        <div class="enr-field-label">ARTIST</div>
+                        <div class="enr-field-value"
+                             t-out="appointment.bsi_artist_id.name or 'Any available'"/>
+                    </div>
+                    <div>
+                        <div class="enr-field-label">CHAIR</div>
+                        <div class="enr-field-value"
+                             t-out="', '.join(appointment.bsi_chair_ids.mapped('name')) or '—'"/>
+                    </div>
+                    <div>
+                        <div class="enr-field-label">REFERENCE</div>
+                        <div class="enr-field-value">#<t t-out="appointment.id"/></div>
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <div class="enr-field-label">SERVICES</div>
+                        <div class="enr-field-value"
+                             t-out="bsi_appointment_services(appointment) or 'To be confirmed'"/>
+                    </div>
+                </div>
+                <div class="enr-pass-foot">
+                    <span class="enr-total-label">TOTAL</span>
+                    <span class="enr-total" t-out="bsi_money(appointment.bsi_amount_total)"/>
+                </div>
+            </div>
+
+            <!-- What was taken off, and why — the same three reductions the booking
+                 mixin applies (see _bsi_compute_bsi_amounts_common), each shown only
+                 when it actually applied to this booking. -->
+            <div class="enr-panel"
+                 t-if="appointment.bsi_discount_percent or appointment.bsi_loyalty_redeemed_amount
+                       or appointment.bsi_gift_card_applied_amount or appointment.bsi_referral_discount_amount">
+                <h2>How this total was worked out</h2>
+                <div class="enr-totals">
+                    <div>
+                        <span>Services</span>
+                        <span t-out="bsi_money(appointment.bsi_services_amount)"/>
+                    </div>
+                    <div t-if="appointment.bsi_discount_percent" style="color:#1a9d5d;font-weight:700;">
+                        <span>✓ <t t-out="appointment.bsi_membership_id.name or 'Membership'"/>
+                            (−<t t-out="int(appointment.bsi_discount_percent)"/>%)</span>
+                        <span>applied</span>
+                    </div>
+                    <div t-if="appointment.bsi_loyalty_redeemed_amount" style="color:#1a9d5d;font-weight:700;">
+                        <span>✓ Loyalty points</span>
+                        <span>−<t t-out="bsi_money(appointment.bsi_loyalty_redeemed_amount)"/></span>
+                    </div>
+                    <div t-if="appointment.bsi_referral_discount_amount" style="color:#1a9d5d;font-weight:700;">
+                        <span>✓ Referral discount</span>
+                        <span>−<t t-out="bsi_money(appointment.bsi_referral_discount_amount)"/></span>
+                    </div>
+                    <div t-if="appointment.bsi_gift_card_applied_amount" style="color:#1a9d5d;font-weight:700;">
+                        <span>✓ Gift card
+                            <t t-if="appointment.bsi_gift_card_id"
+                               t-out="appointment.bsi_gift_card_id.code"/></span>
+                        <span>−<t t-out="bsi_money(appointment.bsi_gift_card_applied_amount)"/></span>
+                    </div>
+                    <div class="enr-grand">
+                        <span>Total</span>
+                        <span t-out="bsi_money(appointment.bsi_amount_total)"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="enr-panel" t-if="appointment.bsi_sale_order_id">
+                <h2>Linked order</h2>
+                <p class="enr-note">
+                    This visit is billed on order
+                    <a class="enr-ref"
+                       t-attf-href="/salon/my/orders/#{appointment.bsi_sale_order_id.id}"
+                       t-out="appointment.bsi_sale_order_id.name"/>.
+                </p>
+            </div>
+
+            <!-- Only a visit that is fully Done (bsi_state == 'completed', which only
+                 happens once its invoice is paid in full) can be reviewed. Posting the
+                 same form again edits the existing review rather than adding a second
+                 one — the lookup and that rule both live in bsi_salon_backend's own
+                 portal controller, which this form posts to rather than duplicating. -->
+            <div class="enr-panel" t-if="appointment.bsi_state == 'completed'">
+                <h2><t t-out="'Update your review' if my_review else 'Leave a review'"/></h2>
+                <form t-attf-action="/my/appointments/#{appointment.id}/review" method="post">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <div style="margin-bottom:18px;">
+                        <div class="enr-field-label" style="color:var(--enr-grey);">OVERALL RATING</div>
+                        <div class="enr-stars">
+                            <t t-foreach="[5, 4, 3, 2, 1]" t-as="n">
+                                <input type="radio" t-attf-id="enr_rating_#{n}" name="rating"
+                                       t-att-value="n"
+                                       t-att-checked="'checked' if my_review and int(my_review.rating) == n else None"/>
+                                <label t-attf-for="enr_rating_#{n}">★</label>
+                            </t>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:18px;" t-if="appointment.bsi_artist_id">
+                        <div class="enr-field-label" style="color:var(--enr-grey);">
+                            RATE <t t-out="appointment.bsi_artist_id.name"/>
+                        </div>
+                        <div class="enr-stars">
+                            <t t-foreach="[5, 4, 3, 2, 1]" t-as="n">
+                                <input type="radio" t-attf-id="enr_artist_rating_#{n}"
+                                       name="artist_rating" t-att-value="n"
+                                       t-att-checked="'checked' if my_review and int(my_review.bsi_artist_rating) == n else None"/>
+                                <label t-attf-for="enr_artist_rating_#{n}">★</label>
+                            </t>
+                        </div>
+                    </div>
+                    <textarea name="feedback" rows="4" class="enr-input"
+                              placeholder="How was your visit?"
+                              t-out="my_review.feedback if my_review else ''"/>
+                    <button type="submit" class="enr-cta"
+                            style="margin-top:16px;display:inline-block;cursor:pointer;">
+                        <t t-out="'Update review' if my_review else 'Submit review'"/>
+                    </button>
+                </form>
+            </div>
+        </t>
+    </template>
+
+    <!-- ══ Orders history ══════════════════════════════════════════════════ -->
+    <template id="bsi_account_orders" name="Enrich Account: Orders">
+        <t t-call="bsi_salon_web.bsi_account_layout">
+            <t t-set="bsi_page_title">Orders</t>
+            <t t-set="bsi_heading">Your orders</t>
+            <t t-set="bsi_subheading">
+                <t t-if="pager['total']">
+                    <t t-out="pager['total']"/> order<t t-if="pager['total'] != 1">s</t> on record
+                </t>
+                <t t-else="">Salon bills, memberships, gift cards and shop purchases all land here.</t>
+            </t>
+
+            <div class="enr-card">
+                <t t-if="orders">
+                    <div class="enr-scroll">
+                        <table class="enr-table">
+                            <thead>
+                                <tr>
+                                    <th>Reference</th>
+                                    <th>Date</th>
+                                    <th>Items</th>
+                                    <th>Payment</th>
+                                    <th>Status</th>
+                                    <th style="text-align:right;">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="orders" t-as="order">
+                                    <td>
+                                        <a class="enr-ref" t-attf-href="/salon/my/orders/#{order.id}"
+                                           t-out="order.name"/>
+                                    </td>
+                                    <td>
+                                        <t t-out="order.date_order" t-options="{'widget': 'date'}"/>
+                                    </td>
+                                    <td>
+                                        <t t-set="lines"
+                                           t-value="order.order_line.filtered(lambda l: not l.display_type)"/>
+                                        <t t-if="lines">
+                                            <t t-out="lines[0].name.split('\n')[0]"/>
+                                            <span class="enr-sub" t-if="len(lines) &gt; 1">
+                                                + <t t-out="len(lines) - 1"/> more item<t t-if="len(lines) &gt; 2">s</t>
+                                            </span>
+                                        </t>
+                                        <t t-else="">—</t>
+                                    </td>
+                                    <td>
+                                        <t t-set="payment" t-value="bsi_order_payment(order)"/>
+                                        <span class="enr-badge"
+                                              t-attf-style="color:#{payment[1]};background:#{payment[1]}1f;"
+                                              t-out="payment[0]"/>
+                                    </td>
+                                    <td>
+                                        <t t-set="ostatus"
+                                           t-value="bsi_order_status.get(order.state, (order.state, '#a79a9d'))"/>
+                                        <span class="enr-badge"
+                                              t-attf-style="color:#{ostatus[1]};background:#{ostatus[1]}1f;"
+                                              t-out="ostatus[0]"/>
+                                    </td>
+                                    <td class="enr-amount" style="text-align:right;"
+                                        t-out="bsi_money(order.amount_total)"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <t t-call="bsi_salon_web.bsi_account_pager"/>
+                </t>
+                <t t-else="">
+                    <div class="enr-empty">
+                        <div class="enr-empty-mark">✦</div>
+                        <h3>No orders yet</h3>
+                        <p>Salon bills, memberships, gift cards and anything you buy in the shop<br/>
+                           will be listed here with their payment status.</p>
+                        <a href="/shop" class="enr-cta">Visit the shop</a>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="bsi_account_order_detail" name="Enrich Account: Order Detail">
+        <t t-call="bsi_salon_web.bsi_account_layout">
+            <t t-set="bsi_page_title">Order</t>
+            <t t-set="bsi_heading"><t t-out="order.name"/></t>
+            <t t-set="bsi_subheading">
+                Placed <t t-out="order.date_order" t-options="{'widget': 'date'}"/>
+            </t>
+            <t t-set="ostatus" t-value="bsi_order_status.get(order.state, (order.state, '#a79a9d'))"/>
+            <t t-set="payment" t-value="bsi_order_payment(order)"/>
+
+            <a href="/salon/my/orders" class="enr-back">← All orders</a>
+
+            <div class="enr-pass">
+                <div class="enr-pass-head">
+                    <div style="display:flex;align-items:center;">
+                        <span class="enr-pass-logo">enrich</span>
+                        <span class="enr-pass-kicker">ORDER</span>
+                    </div>
+                    <span style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <span class="enr-badge"
+                              t-attf-style="color:#{payment[1]};background:#{payment[1]}26;"
+                              t-out="payment[0]"/>
+                        <span class="enr-badge"
+                              t-attf-style="color:#{ostatus[1]};background:#{ostatus[1]}26;"
+                              t-out="ostatus[0]"/>
+                    </span>
+                </div>
+                <div class="enr-pass-body">
+                    <div>
+                        <div class="enr-field-label">REFERENCE</div>
+                        <div class="enr-field-value" t-out="order.name"/>
+                    </div>
+                    <div>
+                        <div class="enr-field-label">ORDER DATE</div>
+                        <div class="enr-field-value">
+                            <t t-out="order.date_order" t-options="{'widget': 'date'}"/>
+                        </div>
+                    </div>
+                    <div t-if="order.bsi_location_id">
+                        <div class="enr-field-label">BRANCH</div>
+                        <div class="enr-field-value" t-out="order.bsi_location_id.name"/>
+                    </div>
+                    <div t-if="order.bsi_preferred_date">
+                        <div class="enr-field-label">VISIT</div>
+                        <div class="enr-field-value">
+                            <t t-out="order.bsi_preferred_date" t-options="{'widget': 'date'}"/>
+                            <t t-if="order.bsi_appointment_time">
+                                · <t t-out="order.bsi_appointment_time"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+                <div class="enr-pass-foot">
+                    <span class="enr-total-label">AMOUNT</span>
+                    <span class="enr-total" t-out="bsi_money(order.amount_total)"/>
+                </div>
+            </div>
+
+            <div class="enr-panel">
+                <h2>What is on this order</h2>
+                <div class="enr-scroll">
+                    <table class="enr-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th style="text-align:right;">Qty</th>
+                                <th style="text-align:right;">Unit price</th>
+                                <th style="text-align:right;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="order.order_line.filtered(lambda l: not l.display_type)"
+                                t-as="line">
+                                <td t-out="line.name"/>
+                                <td style="text-align:right;"
+                                    t-out="int(line.product_uom_qty) if line.product_uom_qty == int(line.product_uom_qty) else line.product_uom_qty"/>
+                                <td style="text-align:right;" t-out="bsi_money(line.price_unit)"/>
+                                <td class="enr-amount" style="text-align:right;"
+                                    t-out="bsi_money(line.price_subtotal)"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="enr-totals" style="margin-top:18px;">
+                    <div>
+                        <span>Untaxed</span>
+                        <span t-out="bsi_money(order.amount_untaxed)"/>
+                    </div>
+                    <div t-if="order.amount_tax">
+                        <span>Taxes</span>
+                        <span t-out="bsi_money(order.amount_tax)"/>
+                    </div>
+                    <div class="enr-grand">
+                        <span>Total</span>
+                        <span t-out="bsi_money(order.amount_total)"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="enr-panel" t-if="order.bsi_appointment_id">
+                <h2>Linked booking</h2>
+                <p class="enr-note">
+                    This order bills your visit on
+                    <a class="enr-ref"
+                       t-attf-href="/salon/my/appointments/#{order.bsi_appointment_id.id}">
+                        <t t-out="order.bsi_preferred_date"
+                           t-options="{'widget': 'date'}"/></a>.
+                </p>
+            </div>
+        </t>
+    </template>
+
+    <!-- Shared pager. Kept as its own template because both list pages render an
+         identical one and the page-number maths already happened server-side (see
+         BsiSalonAccount._bsi_pager). -->
+    <template id="bsi_account_pager" name="Enrich Account: Pager">
+        <div class="enr-pager" t-if="pager['pages'] &gt; 1">
+            <a t-if="pager['prev']" class="enr-page"
+               t-attf-href="#{pager['url']}/page/#{pager['prev']}">←</a>
+            <t t-if="pager['numbers']">
+                <t t-foreach="pager['numbers']" t-as="n">
+                    <a t-attf-class="enr-page#{' is-on' if n == pager['page'] else ''}"
+                       t-attf-href="#{pager['url']}#{'' if n == 1 else '/page/%s' % n}"
+                       t-out="n"/>
+                </t>
+            </t>
+            <t t-else="">
+                <span class="enr-page is-on">
+                    <t t-out="pager['page']"/> / <t t-out="pager['pages']"/>
+                </span>
+            </t>
+            <a t-if="pager['next']" class="enr-page"
+               t-attf-href="#{pager['url']}/page/#{pager['next']}">→</a>
+        </div>
+    </template>
+
+</odoo>

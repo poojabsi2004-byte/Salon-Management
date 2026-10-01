@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ═══ Shop categories ═══ -->
+        <record id="bsi_categ_haircare" model="product.public.category">
+            <field name="name">Hair Care</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="bsi_categ_treatments" model="product.public.category">
+            <field name="name">Treatments &amp; Masks</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="bsi_categ_styling" model="product.public.category">
+            <field name="name">Styling &amp; Oils</field>
+            <field name="sequence">30</field>
+        </record>
+        <record id="bsi_categ_skincare" model="product.public.category">
+            <field name="name">Skin Care</field>
+            <field name="sequence">40</field>
+        </record>
+
+        <!-- ═══ Brand attribute, so the shop can filter by brand ═══ -->
+        <record id="bsi_attr_brand" model="product.attribute">
+            <field name="name">Brand</field>
+            <field name="display_type">radio</field>
+            <field name="create_variant">no_variant</field>
+        </record>
+        <record id="bsi_brand_kerastase" model="product.attribute.value">
+            <field name="name">Kérastase</field>
+            <field name="attribute_id" ref="bsi_attr_brand"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="bsi_brand_loreal" model="product.attribute.value">
+            <field name="name">L'Oréal Professionnel</field>
+            <field name="attribute_id" ref="bsi_attr_brand"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="bsi_brand_redken" model="product.attribute.value">
+            <field name="name">Redken</field>
+            <field name="attribute_id" ref="bsi_attr_brand"/>
+            <field name="sequence">30</field>
+        </record>
+        <record id="bsi_brand_moroccanoil" model="product.attribute.value">
+            <field name="name">Moroccanoil</field>
+            <field name="attribute_id" ref="bsi_attr_brand"/>
+            <field name="sequence">40</field>
+        </record>
+        <record id="bsi_brand_thalgo" model="product.attribute.value">
+            <field name="name">Thalgo</field>
+            <field name="attribute_id" ref="bsi_attr_brand"/>
+            <field name="sequence">50</field>
+        </record>
+        <record id="bsi_brand_facesshop" model="product.attribute.value">
+            <field name="name">The Face Shop</field>
+            <field name="attribute_id" ref="bsi_attr_brand"/>
+            <field name="sequence">60</field>
+        </record>
+        <record id="bsi_brand_enrich" model="product.attribute.value">
+            <field name="name">Enrich</field>
+            <field name="attribute_id" ref="bsi_attr_brand"/>
+            <field name="sequence">70</field>
+        </record>
+
+    </data>
+</odoo>

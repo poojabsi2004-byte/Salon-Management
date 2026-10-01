@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Sign in / registration / password reset, in the Enrich site's own design.
+
+         These are Odoo's STANDARD pages — /web/login (web), /web/signup and
+         /web/reset_password (auth_signup) — so there is still one login system:
+         the forms keep every field name, hidden input and JS hook the standard
+         controllers and widgets use (show-password eye, caps-lock warning, the
+         remembered-user switcher, passkeys, the password-policy meter). Only the
+         chrome around them and the copy change, and a mobile-number field is
+         added to registration (see controllers/auth.py for where it is stored).
+
+         The layout replaces web.login_layout (after website's own override,
+         priority 20) with a split screen: an ink brand panel on the left, the
+         form on cream on the right; on phones the brand panel folds into a
+         compact header above the form. It calls web.frontend_layout directly —
+         like stock Odoo without website does — so the frontend asset bundle (and
+         with it every standard login widget) still loads, but without the site's
+         full navbar/footer around a sign-in form. bsi_login.css is linked here
+         only, not added to the shared bundle. -->
+
+    <template id="bsi_auth_shell" name="Enrich: sign-in shell">
+        <t t-call="web.frontend_layout">
+            <!-- website.layout (merged into web.frontend_layout) renders the site's own
+                 header/footer unconditionally; bsi_auth_hide_site_chrome below skips them
+                 when this is set. -->
+            <t t-set="bsi_login_page" t-value="True"/>
+            <t t-set="body_classname" t-value="'bsi-login-body'"/>
+            <t t-set="no_header" t-value="True"/>
+            <t t-set="no_footer" t-value="True"/>
+            <t t-set="bsi_mode" t-value="bsi_auth_mode or 'other'"/>
+            <t t-if="bsi_mode == 'login'">
+                <t t-set="bsi_eyebrow">Welcome back</t>
+                <t t-set="bsi_heading">Log in to Enrich</t>
+                <t t-set="bsi_sub">Book your next visit, see your appointments and use your loyalty rewards.</t>
+            </t>
+            <t t-elif="bsi_mode == 'signup'">
+                <t t-set="bsi_eyebrow">Join Enrich</t>
+                <t t-if="token">
+                    <t t-set="bsi_heading">Set up your account</t>
+                </t>
+                <t t-else="">
+                    <t t-set="bsi_heading">Create your account</t>
+                </t>
+                <t t-set="bsi_sub">It takes under a minute. Then book any branch, any chair, and earn points on every visit.</t>
+            </t>
+            <t t-elif="bsi_mode == 'reset'">
+                <t t-set="bsi_eyebrow">Account help</t>
+                <t t-if="token and not invalid_token">
+                    <t t-set="bsi_heading">Choose a new password</t>
+                    <t t-set="bsi_sub">Pick a password you have not used here before.</t>
+                </t>
+                <t t-else="">
+                    <t t-set="bsi_heading">Reset your password</t>
+                    <t t-set="bsi_sub">Enter the email you registered with and we will send you a link to set a new password.</t>
+                </t>
+            </t>
+            <t t-else="">
+                <t t-set="bsi_eyebrow">Enrich account</t>
+                <t t-set="bsi_heading">Welcome</t>
+                <t t-set="bsi_sub" t-value="''"/>
+            </t>
+            <t t-set="title" t-value="'%s · Enrich Beauty' % bsi_heading"/>
+            <t t-set="head">
+                <meta name="theme-color" content="#161213"/>
+                <link rel="preload" href="/bsi_salon_web/static/src/fonts/playfair-display-latin.woff2"
+                      as="font" type="font/woff2" crossorigin="anonymous"/>
+                <link rel="preconnect" href="https://fonts.googleapis.com"/>
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+                <link rel="stylesheet"
+                      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"/>
+                <link rel="stylesheet" href="/bsi_salon_web/static/src/css/bsi_login.css?v=4"/>
+            </t>
+
+            <div t-attf-class="bsi-login bsi-login--#{bsi_mode}">
+                <!-- Brand panel -->
+                <aside class="bsi-login__brand" aria-label="Enrich Beauty">
+                    <span class="bsi-login__glow bsi-login__glow--red" aria-hidden="true"></span>
+                    <span class="bsi-login__glow bsi-login__glow--gold" aria-hidden="true"></span>
+                    <svg class="bsi-login__scissors" viewBox="0 0 200 200" aria-hidden="true" focusable="false">
+                        <g fill="none">
+                            <path d="M93.8 113.6 L93 2.4 C101 38.4 107 78 110.6 115.8 Z" fill="#fdf3ea"/>
+                            <path d="M106.2 113.6 L107 2.4 C99 38.4 93 78 89.4 115.8 Z" fill="#c9c2c3"/>
+                            <path d="M107 115 C120.2 124.6 129 137 130.8 144.8" stroke="#fdf3ea" stroke-width="9" stroke-linecap="round"/>
+                            <path d="M93 115 C79.8 124.6 71 137 69.2 144.8" stroke="#c9c2c3" stroke-width="9" stroke-linecap="round"/>
+                            <circle cx="132.6" cy="158" r="13.6" stroke="#e8283f" stroke-width="8.4"/>
+                            <circle cx="67.4" cy="158" r="13.6" stroke="#e8283f" stroke-width="8.4"/>
+                            <circle cx="100" cy="100" r="9.6" fill="#e8283f"/>
+                        </g>
+                    </svg>
+
+                    <a href="/salon" class="bsi-login__logo" aria-label="Enrich Beauty home">
+                        <span class="bsi-login__word">enr<span class="bsi-login__i">i<span class="bsi-login__heart" aria-hidden="true">♥</span></span>ch</span>
+                        <span class="bsi-login__tag">love begins with you</span>
+                    </a>
+
+                    <div class="bsi-login__pitch">
+                        <div class="bsi-login__kicker">The Enrich Circle</div>
+                        <h2 class="bsi-login__headline">Beauty, booked <br/>in a <em>heartbeat.</em></h2>
+                        <ul class="bsi-login__perks">
+                            <li>
+                                <span class="bsi-login__perk-ico" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>
+                                </span>
+                                <span><b>Book in seconds</b>Any branch, any chair, the time that suits you.</span>
+                            </li>
+                            <li>
+                                <span class="bsi-login__perk-ico" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.4 6.8 19.2l1-5.9L3.5 9.2l5.9-.8z"/></svg>
+                                </span>
+                                <span><b>Earn on every visit</b>Loyalty points and member perks, applied for you.</span>
+                            </li>
+                            <li>
+                                <span class="bsi-login__perk-ico" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8.5 10h7M8.5 14h7M8.5 18h4"/></svg>
+                                </span>
+                                <span><b>Everything in one place</b>Your appointments, orders and reviews.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bsi-login__brand-foot">
+                        <span>© Enrich Beauty</span>
+                        <a href="/salon/booking">Book an appointment</a>
+                    </div>
+                </aside>
+
+                <!-- Form panel -->
+                <div class="bsi-login__panel">
+                    <div class="bsi-login__topbar">
+                        <a href="/salon" class="bsi-login__back">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+                            <span>Back to the site</span>
+                        </a>
+                    </div>
+                    <div class="bsi-login__card">
+                        <div class="bsi-login__eyebrow" t-out="bsi_eyebrow"/>
+                        <h1 class="bsi-login__title" t-out="bsi_heading"/>
+                        <p class="bsi-login__sub" t-if="bsi_sub" t-out="bsi_sub"/>
+                        <div class="bsi-login__body">
+                            <t t-out="0"/>
+                        </div>
+                    </div>
+                    <div class="bsi-login__legal">
+                        <a href="/salon/contact">Need help? Contact us</a>
+                        <span aria-hidden="true">·</span>
+                        <a href="/terms">Terms &amp; Conditions</a>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="bsi_auth_hide_site_chrome" inherit_id="website.layout"
+              name="Enrich: no site header/footer on sign-in pages" priority="40">
+        <xpath expr="//t[@t-call='bsi_salon_web.bsi_site_header']" position="attributes">
+            <attribute name="t-if">not bsi_login_page</attribute>
+        </xpath>
+        <xpath expr="//footer[hasclass('bsi-foot')]" position="attributes">
+            <attribute name="t-if">not bsi_login_page</attribute>
+        </xpath>
+    </template>
+
+    <!-- Swap the stock login card for the shell above. Applies to every page
+         built on web.login_layout (login, signup, reset password, the 2FA code
+         step, login_successful), so the whole sign-in journey looks the same. -->
+    <template id="bsi_auth_login_layout" inherit_id="web.login_layout"
+              name="Enrich: sign-in layout" priority="40">
+        <xpath expr="t[@t-call]" position="replace">
+            <t t-call="bsi_salon_web.bsi_auth_shell">
+                <t t-out="0"/>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- /web/login -->
+    <template id="bsi_auth_login" inherit_id="web.login" name="Enrich: log in form" priority="40">
+        <xpath expr="//div[@id='oe_structure_login_top']" position="before">
+            <t t-set="bsi_auth_mode" t-value="'login'"/>
+        </xpath>
+        <!-- Stock hides the form until the remembered-user switcher has run, which
+             paints an empty card first; the switcher still hides it again itself
+             when there are remembered users to choose from. -->
+        <xpath expr="//form[@data-captcha='login']" position="attributes">
+            <attribute name="t-attf-class">oe_login_form</attribute>
+        </xpath>
+        <xpath expr="//input[@name='login']" position="attributes">
+            <attribute name="placeholder">you@example.com</attribute>
+            <attribute name="inputmode">email</attribute>
+        </xpath>
+        <xpath expr="//input[@name='password']" position="attributes">
+            <attribute name="placeholder">Your password</attribute>
+        </xpath>
+        <!-- "Wrong login/password" reads like a system message; say it the way
+             the site would (any other error, e.g. a lockout, is shown as-is). -->
+        <xpath expr="//p[hasclass('alert-danger')]/t[@t-esc='error']" position="replace">
+            <t t-if="error == 'Wrong login/password'">That email and password don't match. Please try again, or reset your password.</t>
+            <t t-else="" t-esc="error"/>
+        </xpath>
+        <!-- auth_signup's "Reset Password" link next to the label -->
+        <xpath expr="//a[@t-attf-href='/web/reset_password?{{ keep_query() }}']" position="replace">
+            <a t-if="reset_password_enabled" class="bsi-login__forgot" tabindex="1"
+               t-attf-href="/web/reset_password?{{ keep_query() }}">Forgot password?</a>
+        </xpath>
+        <!-- auth_signup's "Don't have an account?" link under the button -->
+        <xpath expr="//a[@t-attf-href='/web/signup?{{ keep_query() }}']" position="replace"/>
+        <xpath expr="//form[@data-captcha='login']/div[hasclass('oe_login_buttons')]" position="after">
+            <p t-if="signup_enabled" class="bsi-login__switch">
+                New to Enrich? <a t-attf-href="/web/signup?{{ keep_query() }}">Create an account</a>
+            </p>
+        </xpath>
+    </template>
+
+    <!-- Password + confirm, shared by registration and "choose a new password" -->
+    <template id="bsi_auth_signup_fields" inherit_id="auth_signup.fields"
+              name="Enrich: password fields" priority="40">
+        <xpath expr="//input[@name='password']" position="attributes">
+            <attribute name="placeholder">At least 8 characters</attribute>
+            <attribute name="autocomplete">new-password</attribute>
+            <attribute name="class"></attribute>
+            <attribute name="t-attf-class">form-control#{' is-invalid' if bsi_error_field == 'password' else ''}</attribute>
+        </xpath>
+        <xpath expr="//label[@for='confirm_password']" position="replace">
+            <label for="confirm_password" class="form-label">Confirm password</label>
+        </xpath>
+        <xpath expr="//input[@name='confirm_password']" position="attributes">
+            <attribute name="placeholder">Type it again</attribute>
+            <attribute name="autocomplete">new-password</attribute>
+            <attribute name="class"></attribute>
+            <attribute name="t-attf-class">form-control#{' is-invalid' if bsi_error_field == 'confirm_password' else ''}</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('field-confirm_password')]" position="inside">
+            <div class="bsi-login__hint bsi-login__mismatch" aria-live="polite" hidden="hidden">Passwords do not match yet.</div>
+        </xpath>
+    </template>
+
+    <!-- /web/signup -->
+    <template id="bsi_auth_signup" inherit_id="auth_signup.signup" name="Enrich: registration form" priority="40">
+        <xpath expr="//div[@id='oe_structure_signup_top']" position="before">
+            <t t-set="bsi_auth_mode" t-value="'signup'"/>
+        </xpath>
+        <xpath expr="//label[@for='name']" position="replace">
+            <label for="name" class="form-label">Full name</label>
+        </xpath>
+        <xpath expr="//input[@name='name']" position="attributes">
+            <attribute name="placeholder">e.g. Priya Sharma</attribute>
+            <attribute name="class"></attribute>
+            <attribute name="t-attf-class">form-control#{' is-invalid' if bsi_error_field == 'name' else ''}</attribute>
+            <attribute name="autocomplete">name</attribute>
+            <attribute name="maxlength">128</attribute>
+        </xpath>
+        <xpath expr="//label[@for='login']" position="replace">
+            <label for="login" class="form-label">Email address</label>
+        </xpath>
+        <xpath expr="//input[@name='login']" position="attributes">
+            <attribute name="placeholder">you@example.com</attribute>
+            <attribute name="autocomplete">email</attribute>
+            <attribute name="inputmode">email</attribute>
+            <attribute name="class"></attribute>
+            <attribute name="t-attf-class">form-control#{' is-invalid' if bsi_error_field == 'login' else ''}</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('field-login')]" position="after">
+            <div class="mb-3 field-phone">
+                <label for="phone" class="form-label">Mobile number</label>
+                <input type="tel" name="phone" id="phone" t-att-value="phone"
+                       t-attf-class="form-control#{' is-invalid' if bsi_error_field == 'phone' else ''}"
+                       placeholder="e.g. 98765 43210" autocomplete="tel" inputmode="tel" maxlength="20"
+                       pattern="\+?[0-9\s\(\)\.\-]{10,20}"
+                       title="At least 10 digits; spaces, dashes and a leading + are fine."
+                       t-att-required="None if token else 'required'"/>
+                <div class="bsi-login__hint">We use it only to confirm and remind you about bookings.</div>
+            </div>
+        </xpath>
+        <xpath expr="//div[hasclass('oe_login_buttons')]" position="before">
+            <p class="bsi-login__terms">
+                By creating an account you agree to our
+                <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a>.
+            </p>
+        </xpath>
+        <xpath expr="//div[hasclass('oe_login_buttons')]/button[@type='submit']" position="replace">
+            <button type="submit" class="btn btn-primary mb-1">Create account</button>
+        </xpath>
+        <xpath expr="//a[@t-attf-href='/web/login?{{ keep_query() }}']" position="replace"/>
+        <xpath expr="//form[hasclass('oe_signup_form')]/div[hasclass('oe_login_buttons')]" position="after">
+            <p class="bsi-login__switch">
+                Already have an account? <a t-attf-href="/web/login?{{ keep_query() }}">Log in</a>
+            </p>
+        </xpath>
+        <xpath expr="//form[hasclass('oe_signup_form')]" position="after">
+            <t t-call="bsi_salon_web.bsi_auth_confirm_script"/>
+        </xpath>
+    </template>
+
+    <!-- /web/reset_password (request a link, or choose a new password from it) -->
+    <template id="bsi_auth_reset_password" inherit_id="auth_signup.reset_password"
+              name="Enrich: reset password form" priority="40">
+        <xpath expr="//div[@id='oe_structure_reset_password_top']" position="before">
+            <t t-set="bsi_auth_mode" t-value="'reset'"/>
+        </xpath>
+        <xpath expr="//label[@for='login']" position="replace">
+            <label for="login" class="form-label">Email address</label>
+        </xpath>
+        <xpath expr="//input[@name='login']" position="attributes">
+            <attribute name="placeholder">you@example.com</attribute>
+            <attribute name="autocomplete">email</attribute>
+            <attribute name="inputmode">email</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('oe_login_buttons')]/button[@type='submit']" position="replace">
+            <button type="submit" class="btn btn-primary">
+                <t t-if="token and not invalid_token">Save new password</t>
+                <t t-else="">Send reset link</t>
+            </button>
+        </xpath>
+        <xpath expr="//a[@t-if='not token']" position="replace">
+            <a t-if="not token" class="bsi-login__backlink" t-attf-href="/web/login?{{ keep_query() }}">Back to log in</a>
+        </xpath>
+        <xpath expr="//a[@t-if='invalid_token']" position="replace">
+            <a t-if="invalid_token" class="bsi-login__backlink" href="/web/login">Back to log in</a>
+        </xpath>
+        <xpath expr="//div[@t-if='message']/a" position="replace">
+            <a t-attf-href="/web/login?{{ keep_query('redirect') }}" class="btn btn-primary bsi-login__done-btn" role="button">Back to log in</a>
+        </xpath>
+        <xpath expr="//form[hasclass('oe_reset_password_form')]" position="after">
+            <t t-call="bsi_salon_web.bsi_auth_confirm_script"/>
+        </xpath>
+    </template>
+
+    <!-- Live "passwords match" hint. Server-side validation (auth_signup's own
+         check) still decides; this only saves a round trip. -->
+    <template id="bsi_auth_confirm_script" name="Enrich: confirm password hint">
+        <script>
+            (function () {
+                // put the cursor on the field the server refused, if any
+                var bad = document.querySelector('form .form-control.is-invalid');
+                if (bad) { bad.focus(); }
+                var pw = document.querySelector('form input[name="password"]');
+                var cf = document.querySelector('form input[name="confirm_password"]');
+                if (!pw || !cf) { return; }
+                var hint = cf.closest('.field-confirm_password');
+                hint = hint ? hint.querySelector('.bsi-login__mismatch') : null;
+                function check() {
+                    var bad = cf.value.length &gt; 0 &amp;&amp; cf.value !== pw.value;
+                    cf.setCustomValidity(bad ? 'Passwords do not match.' : '');
+                    cf.classList.toggle('is-invalid', bad);
+                    if (hint) { hint.hidden = !bad; }
+                }
+                pw.addEventListener('input', check);
+                cf.addEventListener('input', check);
+            })();
+        </script>
+    </template>
+
+</odoo>

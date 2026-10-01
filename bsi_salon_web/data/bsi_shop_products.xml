@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Retail shelf: the professional lines Enrich stocks at the chair.
+             Images are illustrated pack shots shipped with the module. -->
+
+        <record id="bsi_prod_k_chroma_bain" model="product.template">
+            <field name="name">Kérastase Chroma Absolu Bain Riche Chroma Respect 250 ml</field>
+            <field name="sequence">10</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">2950</field>
+            <field name="description_sale">A sulphate-free cleansing bath for colour-treated hair. Lamellar technology seals the cuticle so tone holds longer and shine returns from the first wash.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_haircare')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_kerastase')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/k-chroma-bain.jpg"/>
+        </record>
+
+        <record id="bsi_prod_k_chroma_masque" model="product.template">
+            <field name="name">Kérastase Chroma Absolu Masque Chroma Filler 200 ml</field>
+            <field name="sequence">20</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">3950</field>
+            <field name="description_sale">A deep filler mask for porous, colour-damaged lengths. Rebuilds the fibre from the inside and leaves colour looking freshly done.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_treatments')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_kerastase')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/k-chroma-masque.jpg"/>
+        </record>
+
+        <record id="bsi_prod_k_discipline_bain" model="product.template">
+            <field name="name">Kérastase Discipline Bain Fluidealiste Sulphate-Free 250 ml</field>
+            <field name="sequence">30</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">2950</field>
+            <field name="description_sale">A gentle sulphate-free bath that disciplines frizz and movement without weighing hair down. Ideal after a keratin or smoothing service.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_haircare')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_kerastase')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/k-discipline-bain.jpg"/>
+        </record>
+
+        <record id="bsi_prod_k_discipline_mask" model="product.template">
+            <field name="name">Kérastase Discipline Maskeratine Hair Mask 200 ml</field>
+            <field name="sequence">40</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">3950</field>
+            <field name="description_sale">72-hour frizz control in a rich, smoothing mask. Restores softness and makes blow-drying dramatically faster.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_treatments')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_kerastase')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/k-discipline-mask.jpg"/>
+        </record>
+
+        <record id="bsi_prod_k_elixir" model="product.template">
+            <field name="name">Kérastase Elixir Ultime L’Huile Originale 75 ml</field>
+            <field name="sequence">50</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">5900</field>
+            <field name="description_sale">The original four-oil elixir. Use it on damp hair before drying for heat protection, or on dry ends for instant shine.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_styling')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_kerastase')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/k-elixir.jpg"/>
+        </record>
+
+        <record id="bsi_prod_k_genesis" model="product.template">
+            <field name="name">Kérastase Genesis Bain Nutri-Fortifiant 250 ml</field>
+            <field name="sequence">60</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">2960</field>
+            <field name="description_sale">A fortifying bath for hair that feels weakened at the root. Reduces breakage during brushing and leaves the scalp comfortable.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_haircare')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_kerastase')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/k-genesis.jpg"/>
+        </record>
+
+        <record id="bsi_prod_lo_absolut" model="product.template">
+            <field name="name">L’Oréal Professionnel Serie Expert Absolut Repair Shampoo 300 ml</field>
+            <field name="sequence">70</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">1150</field>
+            <field name="description_sale">Professional repair for damaged, over-processed hair. Gently cleanses while beginning the rebuilding process along the fibre.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_haircare')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_loreal')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/lo-absolut.jpg"/>
+        </record>
+
+        <record id="bsi_prod_lo_vitamino" model="product.template">
+            <field name="name">L’Oréal Professionnel Vitamino Color Masque 250 ml</field>
+            <field name="sequence">80</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">1890</field>
+            <field name="description_sale">A colour-protecting masque with Resveratrol. Keeps tone true and adds the glass-like shine that fresh colour is known for.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_treatments')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_loreal')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/lo-vitamino.jpg"/>
+        </record>
+
+        <record id="bsi_prod_lo_metal" model="product.template">
+            <field name="name">L’Oréal Professionnel Metal Detox Anti-Deposit Serum 50 ml</field>
+            <field name="sequence">90</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">2100</field>
+            <field name="description_sale">Neutralises the metal particles in hard water that cause colour to dull and break. A must before and after any lightening service.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_treatments')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_loreal')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/lo-metal.jpg"/>
+        </record>
+
+        <record id="bsi_prod_lo_tecni" model="product.template">
+            <field name="name">L’Oréal Professionnel Tecni.Art Fix Anti-Frizz Spray 250 ml</field>
+            <field name="sequence">100</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">1450</field>
+            <field name="description_sale">A working spray that holds a style through humidity without stiffness. Brushes out cleanly and never flakes.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_styling')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_loreal')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/lo-tecni.jpg"/>
+        </record>
+
+        <record id="bsi_prod_rd_allsoft" model="product.template">
+            <field name="name">Redken All Soft Mega Curls Shampoo 300 ml</field>
+            <field name="sequence">110</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">1690</field>
+            <field name="description_sale">Deep hydration for very dry, curly hair. Cleanses without stripping, so curl pattern stays defined and springy.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_haircare')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_redken')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/rd-allsoft.jpg"/>
+        </record>
+
+        <record id="bsi_prod_rd_acidic" model="product.template">
+            <field name="name">Redken Acidic Bonding Concentrate Treatment 150 ml</field>
+            <field name="sequence">120</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">2390</field>
+            <field name="description_sale">A leave-in bonding treatment that repairs the internal structure. Use weekly if you colour, lighten or heat-style regularly.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_treatments')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_redken')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/rd-acidic.jpg"/>
+        </record>
+
+        <record id="bsi_prod_mo_treatment" model="product.template">
+            <field name="name">Moroccanoil Treatment Original 100 ml</field>
+            <field name="sequence">130</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">3400</field>
+            <field name="description_sale">The argan-oil original. A few drops through damp lengths cuts drying time, tames frizz and leaves a weightless shine.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_styling')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_moroccanoil')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/mo-treatment.jpg"/>
+        </record>
+
+        <record id="bsi_prod_mo_cream" model="product.template">
+            <field name="name">Moroccanoil Hydrating Styling Cream 300 ml</field>
+            <field name="sequence">140</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">2600</field>
+            <field name="description_sale">A lightweight styling cream for soft, touchable definition. Works on straight and wavy hair, with or without heat.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_styling')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_moroccanoil')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/mo-cream.jpg"/>
+        </record>
+
+        <record id="bsi_prod_th_coldcream" model="product.template">
+            <field name="name">Thalgo Cold Cream Marine Nutri-Comfort Cream 50 ml</field>
+            <field name="sequence">150</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">4200</field>
+            <field name="description_sale">Marine-based comfort for dry, sensitised skin. Rebuilds the barrier and calms tightness within days.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_skincare')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_thalgo')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/th-coldcream.jpg"/>
+        </record>
+
+        <record id="bsi_prod_th_hyalu" model="product.template">
+            <field name="name">Thalgo Hyalu-Procollagen Wrinkle Correcting Serum 30 ml</field>
+            <field name="sequence">160</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">5600</field>
+            <field name="description_sale">A concentrated serum pairing hyaluronic acid with marine pro-collagen. Visibly smooths fine lines around the eyes and mouth.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_skincare')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_thalgo')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/th-hyalu.jpg"/>
+        </record>
+
+        <record id="bsi_prod_tfs_rice" model="product.template">
+            <field name="name">The Face Shop Rice Water Bright Cleansing Foam 150 ml</field>
+            <field name="sequence">170</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">890</field>
+            <field name="description_sale">A gentle daily foam with rice water and moringa oil. Removes makeup and city grime without leaving skin squeaky.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_skincare')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_facesshop')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/tfs-rice.jpg"/>
+        </record>
+
+        <record id="bsi_prod_tfs_collagen" model="product.template">
+            <field name="name">The Face Shop Original Collagen Face Mask Set (5 sheets)</field>
+            <field name="sequence">180</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">650</field>
+            <field name="description_sale">Five single-use collagen sheet masks. Plumping and calming — the night before an event, this is the one.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_skincare')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_facesshop')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/tfs-collagen.jpg"/>
+        </record>
+
+        <record id="bsi_prod_en_argan" model="product.template">
+            <field name="name">Enrich Pro Argan Hair Serum 100 ml</field>
+            <field name="sequence">190</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">1290</field>
+            <field name="description_sale">Our own-label finishing serum, blended for Indian hair and Indian humidity. Light enough for fine hair, strong enough for coarse.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_styling')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_enrich')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/en-argan.jpg"/>
+        </record>
+
+        <record id="bsi_prod_en_scalp" model="product.template">
+            <field name="name">Enrich Salon Scalp Detox Scrub 200 ml</field>
+            <field name="sequence">200</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="list_price">1450</field>
+            <field name="description_sale">A pre-wash scrub that lifts product build-up and oil from the scalp. Use fortnightly for a genuinely clean, comfortable root.</field>
+            <field name="is_published" eval="True"/>
+            <field name="public_categ_ids" eval="[(6, 0, [ref('bsi_categ_haircare')])]"/>
+            <field name="attribute_line_ids" eval="[(0, 0, {
+                'attribute_id': ref('bsi_attr_brand'),
+                'value_ids': [(6, 0, [ref('bsi_brand_enrich')])],
+            })]"/>
+            <field name="image_1920" type="base64" file="bsi_salon_web/static/src/img/shop/en-scalp.jpg"/>
+        </record>
+
+    </data>
+
+</odoo>

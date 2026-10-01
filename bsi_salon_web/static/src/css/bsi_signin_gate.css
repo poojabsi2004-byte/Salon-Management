@@ -1,0 +1,100 @@
+/* Enrich -- sign-in gate on the /salon SPA (controllers/enrich_auth.py).
+   "Sign in to continue" dialog shown when a guest tries to book, buy a
+   membership / gift card or use points, plus the Confirm-step card's
+   "Create account" link. Prefix .bsi-gate (the login pages own .bsi-auth,
+   see bsi_auth.css). Brand: ink #161213, crimson #e8283f, gold #c9a15a,
+   cream #fdf3ea. */
+
+.bsi-gate {
+  position: fixed; inset: 0; z-index: 2147483000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+.bsi-gate *, .bsi-gate *::before, .bsi-gate *::after { box-sizing: border-box; }
+.bsi-gate__scrim {
+  position: absolute; inset: 0;
+  background: rgba(22, 18, 19, .62);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  opacity: 0; transition: opacity .22s ease;
+}
+.bsi-gate__card {
+  position: relative; width: 100%; max-width: 420px;
+  background: #161213; color: #fdf3ea;
+  border: 1px solid rgba(201, 161, 90, .35);
+  border-radius: 20px;
+  padding: 34px 30px 22px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .45), 0 0 0 1px rgba(255, 255, 255, .03) inset;
+  text-align: center;
+  opacity: 0; transform: translateY(14px) scale(.98);
+  transition: opacity .22s ease, transform .26s cubic-bezier(.2, .8, .2, 1);
+  max-height: calc(100vh - 32px); overflow: auto;
+}
+.bsi-gate.is-in .bsi-gate__scrim { opacity: 1; }
+.bsi-gate.is-in .bsi-gate__card { opacity: 1; transform: none; }
+
+.bsi-gate__x {
+  position: absolute; top: 10px; right: 12px;
+  width: 36px; height: 36px; border: 0; border-radius: 50%;
+  background: transparent; color: rgba(253, 243, 234, .6);
+  font-size: 24px; line-height: 1; cursor: pointer;
+}
+.bsi-gate__x:hover, .bsi-gate__x:focus-visible { color: #fdf3ea; background: rgba(253, 243, 234, .08); outline: none; }
+
+.bsi-gate__mark {
+  width: 52px; height: 52px; margin: 0 auto 14px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  color: #c9a15a;
+  background: radial-gradient(circle at 30% 30%, rgba(201, 161, 90, .22), rgba(201, 161, 90, .06));
+  border: 1px solid rgba(201, 161, 90, .4);
+}
+.bsi-gate__eyebrow {
+  font-size: 11px; font-weight: 800; letter-spacing: 2.2px; text-transform: uppercase;
+  color: #c9a15a; margin-bottom: 8px;
+}
+.bsi-gate__h {
+  margin: 0 0 10px;
+  font-family: 'Playfair Display', Georgia, serif; font-weight: 700;
+  font-size: 26px; line-height: 1.2; color: #fdf3ea;
+}
+.bsi-gate__s {
+  margin: 0 auto 22px; max-width: 340px;
+  font-size: 14.5px; line-height: 1.6; color: rgba(253, 243, 234, .74);
+}
+.bsi-gate__actions { display: flex; flex-direction: column; gap: 10px; }
+.bsi-gate__btn {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 48px; padding: 0 20px; border-radius: 999px;
+  font-size: 15px; font-weight: 800; letter-spacing: .2px;
+  text-decoration: none; cursor: pointer;
+  transition: transform .15s ease, background-color .15s ease, box-shadow .15s ease, color .15s ease;
+}
+.bsi-gate__btn--primary { background: #e8283f; color: #fff; box-shadow: 0 10px 26px rgba(232, 40, 63, .35); }
+.bsi-gate__btn--primary:hover { background: #d11f35; color: #fff; transform: translateY(-1px); }
+.bsi-gate__btn--ghost { background: transparent; color: #c9a15a; border: 1.5px solid rgba(201, 161, 90, .6); }
+.bsi-gate__btn--ghost:hover { background: rgba(201, 161, 90, .1); color: #e0bd7c; }
+.bsi-gate__btn:focus-visible, .bsi-gate__later:focus-visible { outline: 2px solid #c9a15a; outline-offset: 3px; }
+.bsi-gate__later {
+  margin-top: 14px; border: 0; background: transparent;
+  color: rgba(253, 243, 234, .55); font: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer; padding: 6px 10px;
+}
+.bsi-gate__later:hover { color: #fdf3ea; }
+
+@media (max-width: 480px) {
+  .bsi-gate { align-items: flex-end; padding: 0; }
+  .bsi-gate__card { max-width: none; border-radius: 20px 20px 0 0; padding: 30px 20px 18px; transform: translateY(40px); }
+  .bsi-gate__h { font-size: 23px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bsi-gate__scrim, .bsi-gate__card { transition: none; }
+}
+
+/* Confirm step: enrich_confirm's .bsi-cf-signin card gets a "Create account" link. */
+.bsi-gate-inline { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; }
+.bsi-gate-inline__signup {
+  font-size: 13px; font-weight: 800; color: #c9a15a; text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.bsi-gate-inline__signup:hover { color: #e8283f; }

@@ -1,0 +1,621 @@
+/*
+ * PHASE 7 DEV — navbar submenu redesign.
+ *
+ * ONE file, loaded two ways, so there is exactly one navbar design to keep in
+ * sync rather than two drifting copies:
+ *   - the SPA export at /salon (main.py's own served page, which bypasses
+ *     Odoo's asset bundles entirely — see main.py's own docstring) links to
+ *     this file directly by its static URL;
+ *   - every other frontend page (shop, cart, checkout, contact, the stock
+ *     portal) gets it through the normal web.assets_frontend bundle, via
+ *     website.layout (see bsi_shop_templates.xml's bsi_shop_fonts).
+ *
+ * Both worlds render the exact same markup — a `.bsi-navi` wrapper around a
+ * trigger (`.bsi-nav-trigger` / `.bsi-account-trigger` / `.bsi-nav-login`)
+ * and, where the item has children, a `.bsi-subm` panel — so one shared
+ * stylesheet is enough; nothing here is page-specific.
+ *
+ * Phase 7 replaces the Phase 6 square-cornered white panel with a modern
+ * mega-menu style:
+ *   - a slim frosted-glass panel lifted with a crimson→gold gradient hairline
+ *     that sweeps as the panel opens,
+ *   - each row rendered as a card-like pill with a leading accent dot, a
+ *     label and a right-side meta pill, expanding with a 3-D perspective
+ *     tilt-in cascade,
+ *   - a floating gradient orb behind the panel that drifts on hover to give
+ *     the surface a sense of depth (mimicking a 3-D scene without WebGL),
+ *   - a Playfair Display panel-heading so the dropdown reads editorial the
+ *     way the rest of the salon site does.
+ * All interaction (hover / focus-within, real <a> targets, keyboard access)
+ * and every markup class is unchanged — only presentation and motion move.
+ */
+
+.bsi-navi {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* ── top-level trigger ────────────────────────────────────────────────── */
+
+.bsi-navi > .bsi-nav-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  padding: 6px 2px 10px;
+  white-space: nowrap;
+  text-decoration: none;
+  letter-spacing: .1px;
+  transition: color .28s cubic-bezier(.16, 1, .3, 1);
+}
+
+/* A gradient underline, centred, that grows on hover and stays put under
+   whichever page is actually open (`.is-active`). */
+.bsi-navi > .bsi-nav-trigger::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #e8283f 0%, #c9a15a 100%);
+  transform: translateX(-50%);
+  transition: width .38s cubic-bezier(.16, 1, .3, 1);
+}
+.bsi-navi:hover > .bsi-nav-trigger::after,
+.bsi-navi:focus-within > .bsi-nav-trigger::after,
+.bsi-navi.is-active > .bsi-nav-trigger::after {
+  width: 100%;
+}
+
+.bsi-navi .bsi-caret {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 9px;
+  color: #a79a9d;
+  transform: translateY(0) rotate(0deg);
+  transition: transform .38s cubic-bezier(.34, 1.56, .64, 1), color .22s ease;
+}
+.bsi-navi:hover .bsi-caret,
+.bsi-navi:focus-within .bsi-caret {
+  transform: translateY(1px) rotate(180deg);
+  color: #e8283f;
+}
+.bsi-navi:hover > .bsi-nav-trigger,
+.bsi-navi:focus-within > .bsi-nav-trigger {
+  color: #e8283f;
+}
+
+/* ── dropdown panel — frosted glass, rounded, floats over a soft orb ── */
+
+.bsi-subm {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  min-width: 288px;
+  margin-top: 16px;
+  padding: 14px 12px 12px;
+  /* Frosted glass on a warm cream — the panel reads as a floating card of
+     the salon's own palette, not a generic system chrome. */
+  background:
+    linear-gradient(180deg, rgba(255, 253, 250, .96) 0%, rgba(253, 243, 234, .92) 100%);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  border: 1px solid rgba(20, 17, 17, .06);
+  border-radius: 18px;
+  box-shadow:
+    0 32px 68px -20px rgba(20, 17, 17, .28),
+    0 12px 28px -10px rgba(20, 17, 17, .18),
+    0 1px 0 rgba(255, 255, 255, .8) inset,
+    0 0 0 1px rgba(232, 40, 63, .04);
+  overflow: visible;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate(-50%, -10px) scale(.94) rotateX(-6deg);
+  transform-origin: top center;
+  perspective: 900px;
+  transition:
+    opacity .28s ease,
+    transform .48s cubic-bezier(.2, .9, .25, 1.15),
+    visibility .48s;
+  z-index: 200;
+  font-family: 'Manrope', sans-serif;
+}
+/* The gradient hairline every panel opens on — ink → crimson → gold, the
+   same three accents the rest of the site already uses together (see e.g.
+   the confirmed-ticket sheen and the membership banner). It sweeps in
+   width from centre-out as the panel appears, echoing the top-level
+   underline that also grew from the same origin. */
+.bsi-subm::before {
+  content: '';
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%, #e8283f 22%, #c9a15a 78%, transparent 100%);
+  opacity: 0;
+  transform: scaleX(.4);
+  transform-origin: center;
+  transition: transform .55s cubic-bezier(.16, 1, .3, 1), opacity .3s ease .05s;
+}
+.bsi-navi:hover > .bsi-subm::before,
+.bsi-navi:focus-within > .bsi-subm::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+/* Floating orb — sits behind the panel and drifts as the panel opens, giving
+   the flat glass a sense of depth without any WebGL. */
+.bsi-subm::after {
+  content: '';
+  position: absolute;
+  left: -18%;
+  top: -32%;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(232, 40, 63, .22), transparent 62%),
+    radial-gradient(circle at 70% 70%, rgba(201, 161, 90, .18), transparent 65%);
+  filter: blur(28px);
+  z-index: -1;
+  opacity: 0;
+  transform: translate3d(-8px, -8px, 0) scale(.85);
+  transition: transform .8s cubic-bezier(.16, 1, .3, 1), opacity .5s ease;
+  pointer-events: none;
+}
+.bsi-navi:hover > .bsi-subm::after,
+.bsi-navi:focus-within > .bsi-subm::after {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+/* An invisible bridge over the gap between trigger and panel, so the pointer
+   never "leaves" the .bsi-navi while crossing it. */
+.bsi-subm > .bsi-subm-bridge,
+.bsi-navi > .bsi-subm {
+  /* fall-through: the bridge is drawn as a shared pseudo on the wrapper */
+}
+.bsi-navi::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 20px;
+  pointer-events: none;
+}
+.bsi-navi:hover::after,
+.bsi-navi:focus-within::after {
+  pointer-events: auto;
+}
+.bsi-navi:hover > .bsi-subm,
+.bsi-navi:focus-within > .bsi-subm {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate(-50%, 0) scale(1) rotateX(0deg);
+}
+.bsi-navi-right > .bsi-subm {
+  left: auto;
+  right: 0;
+  transform-origin: top right;
+  transform: translate(0, -10px) scale(.94) rotateX(-6deg);
+}
+.bsi-navi-right:hover > .bsi-subm,
+.bsi-navi-right:focus-within > .bsi-subm {
+  transform: translate(0, 0) scale(1) rotateX(0deg);
+}
+.bsi-navi-right > .bsi-subm::after {
+  left: auto;
+  right: -18%;
+}
+
+/* Panel heading — editorial Playfair so the dropdown reads on-brand rather
+   than as generic system chrome. Small sizing keeps it a label, not a
+   competing headline. */
+.bsi-sub-group {
+  position: relative;
+  padding: 6px 16px 10px;
+  margin-bottom: 6px;
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  letter-spacing: .5px;
+  color: #241b1e;
+  font-weight: 600;
+  text-transform: none;
+  font-style: italic;
+}
+.bsi-sub-group::after {
+  content: '';
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    rgba(20, 17, 17, .12) 0%, rgba(20, 17, 17, .04) 60%, transparent 100%);
+}
+
+/* ── submenu rows — card-style, dot marker, meta pill, staggered lift ─── */
+
+.bsi-sublink {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 11px 14px 11px 30px;
+  margin: 2px 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c2325;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  text-align: left;
+  width: calc(100% - 8px);
+  font-family: 'Manrope', sans-serif;
+  opacity: 0;
+  transform: translateY(-8px) rotateX(-12deg);
+  transform-origin: top center;
+  transition:
+    background .28s cubic-bezier(.16, 1, .3, 1),
+    color .22s ease,
+    border-color .28s ease,
+    box-shadow .28s ease,
+    padding-left .32s cubic-bezier(.16, 1, .3, 1),
+    opacity .42s cubic-bezier(.16, 1, .3, 1),
+    transform .5s cubic-bezier(.2, .9, .25, 1.1);
+}
+/* The leading accent — a solid dot that grows into a short bar, and a
+   thin left rule that unfurls beside it on hover. Together they read as a
+   deliberate marker for "this row is aimed at". */
+.bsi-sublink::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e8283f 0%, #c9a15a 100%);
+  transform: translateY(-50%) scale(.55);
+  opacity: .45;
+  box-shadow: 0 0 0 0 rgba(232, 40, 63, .35);
+  transition:
+    transform .38s cubic-bezier(.34, 1.56, .64, 1),
+    opacity .3s ease,
+    box-shadow .35s ease,
+    width .38s cubic-bezier(.34, 1.56, .64, 1),
+    border-radius .3s ease;
+}
+.bsi-sublink:hover,
+.bsi-sublink:focus {
+  background: linear-gradient(135deg,
+    rgba(232, 40, 63, .07) 0%, rgba(201, 161, 90, .08) 100%);
+  border-color: rgba(232, 40, 63, .18);
+  color: #161213;
+  padding-left: 36px;
+  box-shadow:
+    0 10px 22px -14px rgba(232, 40, 63, .35),
+    0 1px 0 rgba(255, 255, 255, .7) inset;
+  outline: none;
+}
+.bsi-sublink:hover::before,
+.bsi-sublink:focus::before {
+  transform: translateY(-50%) scale(1);
+  opacity: 1;
+  width: 14px;
+  border-radius: 3px;
+  box-shadow: 0 0 12px 2px rgba(232, 40, 63, .35);
+}
+
+/* Right-hand meta pill — count, price, or badge; picks up a tint on hover. */
+.bsi-sublink small {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #7a6d70;
+  letter-spacing: .5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(20, 17, 17, .05);
+  border: 1px solid rgba(20, 17, 17, .04);
+  transition:
+    background .22s ease, color .22s ease,
+    border-color .22s ease, transform .22s ease;
+}
+.bsi-sublink:hover small,
+.bsi-sublink:focus small {
+  background: linear-gradient(135deg,
+    rgba(232, 40, 63, .14) 0%, rgba(201, 161, 90, .18) 100%);
+  border-color: rgba(232, 40, 63, .2);
+  color: #8a2332;
+  transform: translateX(-2px);
+}
+.bsi-sublink.is-danger {
+  color: #8a2332;
+}
+.bsi-sublink.is-danger:hover {
+  background: linear-gradient(135deg,
+    rgba(232, 40, 63, .1) 0%, rgba(232, 40, 63, .04) 100%);
+  border-color: rgba(232, 40, 63, .22);
+  color: #e8283f;
+}
+.bsi-sublink.is-danger::before {
+  background: linear-gradient(135deg, #e8283f 0%, #8a2332 100%);
+}
+
+/* Staggered cascade — each row lifts and tilts into place a fraction after
+   the previous one. Fixed nth-child delays are enough here; no dropdown
+   holds more than seven rows (five categories/cities + a divider + "see
+   all"). */
+.bsi-navi:hover .bsi-sublink,
+.bsi-navi:focus-within .bsi-sublink,
+.bsi-navi:hover .bsi-account-trigger + .bsi-subm .bsi-sublink {
+  opacity: 1;
+  transform: translateY(0) rotateX(0deg);
+}
+.bsi-sublink:nth-child(1) { transition-delay: .04s; }
+.bsi-sublink:nth-child(2) { transition-delay: .08s; }
+.bsi-sublink:nth-child(3) { transition-delay: .12s; }
+.bsi-sublink:nth-child(4) { transition-delay: .16s; }
+.bsi-sublink:nth-child(5) { transition-delay: .2s; }
+.bsi-sublink:nth-child(6) { transition-delay: .24s; }
+.bsi-sublink:nth-child(7) { transition-delay: .28s; }
+
+.bsi-sub-divider {
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%, rgba(20, 17, 17, .1) 20%,
+    rgba(20, 17, 17, .1) 80%, transparent 100%);
+  margin: 8px 14px;
+}
+
+/* ── horizontal variant — Services / Stores: a row of category cards, each
+   with its own label + time, wrapping onto as many lines as needed, with the
+   "browse all / see every branch" link spanning the full width beneath. ── */
+.bsi-subm--row {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  min-width: 480px;
+  max-width: 640px;
+  gap: 4px 8px;
+}
+.bsi-subm--row .bsi-sub-group {
+  flex: 1 0 100%;
+}
+.bsi-subm--row .bsi-sublink {
+  flex: 1 1 200px;
+  width: auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 13px 16px 13px 20px;
+}
+.bsi-subm--row .bsi-sublink::before {
+  top: 21px;
+}
+.bsi-subm--row .bsi-sublink:hover,
+.bsi-subm--row .bsi-sublink:focus {
+  padding-left: 20px;
+}
+.bsi-subm--row .bsi-sub-cat {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 14px;
+}
+.bsi-subm--row .bsi-sub-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.bsi-subm--row .bsi-sub-time {
+  font-size: 10.5px;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: .3px;
+  color: #a8760f;
+}
+.bsi-subm--row .bsi-sub-divider {
+  flex: 1 0 100%;
+  margin: 4px 4px 2px;
+}
+.bsi-subm--row .bsi-sublink:last-of-type {
+  flex: 1 0 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(232, 40, 63, .06), rgba(201, 161, 90, .08));
+}
+@media (max-width: 1240px) {
+  .bsi-subm--row {
+    min-width: 380px;
+    max-width: 460px;
+  }
+  .bsi-subm--row .bsi-sublink {
+    flex-basis: 160px;
+  }
+}
+
+/* ── the signed-in account pill + its own dropdown ───────────────────── */
+
+.bsi-account-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px 8px 12px;
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, rgba(20, 17, 17, .06) 0%, rgba(20, 17, 17, .02) 100%);
+  border: 1px solid rgba(20, 17, 17, .1);
+  color: #161213;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Manrope', sans-serif;
+  transition:
+    background .32s cubic-bezier(.16, 1, .3, 1), color .2s ease,
+    border-color .3s ease, box-shadow .3s ease, transform .22s ease;
+}
+.bsi-account-trigger .bsi-account-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3ddc84;
+  box-shadow: 0 0 0 3px rgba(61, 220, 132, .18);
+  animation: bsiDotPulse 2.4s ease-in-out infinite;
+}
+.bsi-navi:hover > .bsi-account-trigger,
+.bsi-navi:focus-within > .bsi-account-trigger {
+  background: linear-gradient(135deg, #241b1e 0%, #161213 100%);
+  color: #fdf3ea;
+  border-color: #161213;
+  box-shadow:
+    0 18px 34px -16px rgba(20, 17, 17, .6),
+    0 0 0 1px rgba(201, 161, 90, .25) inset;
+  transform: translateY(-1px);
+}
+
+@keyframes bsiDotPulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(61, 220, 132, .18); }
+  50% { box-shadow: 0 0 0 6px rgba(61, 220, 132, .08); }
+}
+
+.bsi-nav-login {
+  display: inline-block;
+  padding: 9px 20px;
+  border-radius: 999px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #161213;
+  text-decoration: none;
+  border: 1px solid rgba(20, 17, 17, .18);
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  transition: color .24s ease, border-color .28s ease, transform .22s ease;
+}
+.bsi-nav-login::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #241b1e 0%, #161213 100%);
+  transform: translateY(100%);
+  transition: transform .38s cubic-bezier(.16, 1, .3, 1);
+  z-index: -1;
+}
+.bsi-nav-login:hover {
+  color: #fdf3ea;
+  border-color: #161213;
+  transform: translateY(-1px);
+}
+.bsi-nav-login:hover::before {
+  transform: translateY(0);
+}
+
+/* Respect a visitor who has asked for less motion — every panel and row
+   still opens/closes, just without the tilt/lift/cascade choreography. */
+@media (prefers-reduced-motion: reduce) {
+  .bsi-navi > .bsi-nav-trigger::after,
+  .bsi-navi .bsi-caret,
+  .bsi-subm,
+  .bsi-subm::before,
+  .bsi-subm::after,
+  .bsi-sublink,
+  .bsi-sublink::before,
+  .bsi-sublink small,
+  .bsi-account-trigger,
+  .bsi-nav-login,
+  .bsi-nav-login::before {
+    transition-duration: .01ms !important;
+    transition-delay: 0s !important;
+    animation-duration: .01ms !important;
+  }
+  .bsi-sublink { transform: none !important; }
+  .bsi-subm { transform: translate(-50%, 0) scale(1) !important; }
+  .bsi-navi-right > .bsi-subm { transform: translate(0, 0) scale(1) !important; }
+}
+
+/* ── mid widths (laptops, tablets in landscape) ──────────────────────────
+   Nine links, the account pill and the CTA only fit one row at full desktop
+   spacing from ~1200px up; below that the row used to wrap under itself and
+   squeeze the logo's tagline. Tighter gaps and type keep it to one row. */
+@media (min-width: 821px) and (max-width: 1240px) {
+  .bsi-nav-shell {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+  .bsi-nav-shell > a { flex-shrink: 0; }
+  .bsi-nav-shell > div { gap: 10px !important; }
+  .bsi-nav-shell > div > div[style*="gap"] {
+    gap: 13px !important;
+    flex-wrap: nowrap !important;
+  }
+  .bsi-navi > .bsi-nav-trigger { font-size: 13px; }
+  .bsi-navi .bsi-caret { margin-left: 3px; }
+  .bsi-account-trigger { padding: 7px 12px 7px 10px; font-size: 12.5px; }
+  .bsi-nav-shell .enr-nav-cta { padding: 10px 16px !important; font-size: 13px !important; }
+}
+@media (min-width: 821px) and (max-width: 1040px) {
+  .bsi-nav-shell > div > div[style*="gap"] { gap: 10px !important; }
+  .bsi-navi > .bsi-nav-trigger { font-size: 12.5px; }
+  .bsi-navi .bsi-caret { display: none; }
+}
+
+/* ── narrow screens ───────────────────────────────────────────────────── */
+
+@media (max-width: 820px) {
+  .bsi-nav-shell {
+    padding: 12px 16px !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+  .bsi-nav-shell > div {
+    gap: 10px !important;
+    flex-wrap: wrap !important;
+  }
+  /* The link row becomes a horizontally-scrollable strip; a soft fade at
+     each edge signals there is more to scroll, rather than letting an item
+     run off invisibly with no affordance at all. */
+  .bsi-nav-shell > div > div[style*="gap"] {
+    width: 100%;
+    order: 99;
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+  }
+  .bsi-navi > .bsi-nav-trigger {
+    font-size: 13px;
+    padding-bottom: 6px;
+  }
+  .bsi-navi > .bsi-nav-trigger::after {
+    display: none;
+  }
+  /* Hover has no meaning on touch, and a submenu's own parent link already
+     goes to the right page — so on a phone the dropdown just doesn't try to
+     float open; the flat link underneath still works exactly as before. */
+  .bsi-subm {
+    display: none;
+  }
+  .bsi-account-trigger {
+    padding: 6px 12px 6px 10px;
+    font-size: 12.5px;
+  }
+}

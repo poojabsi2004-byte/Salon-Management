@@ -1,0 +1,648 @@
+/*
+ * Enrich sign-in / registration / password reset.
+ *
+ * Linked only from bsi_salon_web.bsi_auth_shell (views/bsi_salon_auth_templates.xml),
+ * i.e. only on /web/login, /web/signup, /web/reset_password and the other
+ * web.login_layout pages -- never part of the shared frontend bundle.
+ *
+ * The forms inside are Odoo's standard Bootstrap markup; everything is scoped
+ * under .bsi-login so none of it leaks. Palette and type are the site's own:
+ * ink #161213, crimson #e8283f, gold #c9a15a, cream #fdf3ea; Playfair Display
+ * headings over Manrope.
+ */
+
+@font-face {
+  font-family: 'BsiLoginPlayfair';
+  src: url('../fonts/playfair-display-latin.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --bl-ink: #161213;
+  --bl-ink-2: #241b1e;
+  --bl-ink-3: #0c0a0b;
+  --bl-red: #e8283f;
+  --bl-red-hover: #d01f35;
+  --bl-red-dark: #8a2332;
+  --bl-gold: #c9a15a;
+  --bl-cream: #fdf3ea;
+  --bl-paper: #faf6f2;
+  --bl-grey: #767676;
+  --bl-grey-2: #a79a9d;
+  --bl-line: rgba(22, 18, 19, .14);
+  --bl-line-soft: rgba(22, 18, 19, .08);
+  --bl-serif: 'BsiLoginPlayfair', 'Playfair Display', Georgia, serif;
+  --bl-sans: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --bl-radius: 12px;
+}
+
+html:has(> body.bsi-login-body),
+body.bsi-login-body {
+  min-height: 100%;
+  height: auto;
+  background: var(--bl-paper);
+}
+body.bsi-login-body {
+  margin: 0;
+  font-family: var(--bl-sans);
+  color: var(--bl-ink);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+body.bsi-login-body #wrapwrap,
+body.bsi-login-body #wrapwrap > main {
+  min-height: 100vh;
+  background: transparent;
+  overflow: visible;
+}
+
+.bsi-login {
+  display: grid;
+  grid-template-columns: minmax(440px, 46%) minmax(0, 1fr);
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+.bsi-login *,
+.bsi-login *::before,
+.bsi-login *::after { box-sizing: border-box; }
+
+/* ── brand panel ─────────────────────────────────────────────────────── */
+
+.bsi-login__brand {
+  /* stretches with the form column, so a long form never runs past the ink */
+  position: relative;
+  align-self: stretch;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 44px 56px 36px;
+  color: var(--bl-cream);
+  background: linear-gradient(150deg, var(--bl-ink-2), #141013 62%, var(--bl-ink-3));
+  isolation: isolate;
+}
+.bsi-login__glow {
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  filter: blur(70px);
+  pointer-events: none;
+}
+.bsi-login__glow--red {
+  width: 420px; height: 420px;
+  top: -140px; right: -120px;
+  background: radial-gradient(circle, rgba(232, 40, 63, .42), rgba(232, 40, 63, 0) 70%);
+}
+.bsi-login__glow--gold {
+  width: 380px; height: 380px;
+  bottom: -160px; left: -120px;
+  background: radial-gradient(circle, rgba(201, 161, 90, .30), rgba(201, 161, 90, 0) 70%);
+}
+.bsi-login__scissors {
+  position: absolute;
+  z-index: -1;
+  right: -70px;
+  bottom: 60px;
+  width: 400px;
+  height: 400px;
+  opacity: .08;
+  transform: rotate(-24deg);
+  pointer-events: none;
+}
+
+.bsi-login__logo {
+  display: inline-flex;
+  flex-direction: column;
+  align-self: flex-start;
+  color: var(--bl-cream);
+  text-decoration: none;
+}
+.bsi-login__logo:hover { color: #fff; }
+.bsi-login__word {
+  font-family: var(--bl-serif);
+  font-weight: 500;
+  font-size: 40px;
+  line-height: 1;
+  letter-spacing: .5px;
+}
+.bsi-login__i { position: relative; display: inline-block; }
+.bsi-login__heart {
+  position: absolute;
+  left: 50%;
+  top: -.42em;
+  transform: translateX(-50%);
+  font-size: .34em;
+  line-height: 1;
+  color: var(--bl-red);
+}
+.bsi-login__tag {
+  margin-top: 4px;
+  font-size: 12px;
+  font-style: italic;
+  letter-spacing: .3px;
+  color: var(--bl-grey-2);
+}
+
+.bsi-login__kicker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: var(--bl-gold);
+}
+.bsi-login__kicker::before {
+  content: '';
+  width: 34px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--bl-red), var(--bl-gold));
+}
+.bsi-login__headline {
+  margin: 0 0 34px;
+  font-family: var(--bl-serif);
+  font-weight: 600;
+  font-size: clamp(40px, 3.9vw, 56px);
+  line-height: 1.04;
+  letter-spacing: -.3px;
+  color: var(--bl-cream);
+}
+.bsi-login__headline em {
+  font-style: italic;
+  color: var(--bl-gold);
+}
+.bsi-login__perks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 18px;
+  max-width: 420px;
+}
+.bsi-login__perks li {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #b9aeb1;
+}
+.bsi-login__perks b {
+  display: block;
+  margin-bottom: 1px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--bl-cream);
+}
+.bsi-login__perk-ico {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(201, 161, 90, .38);
+  background: rgba(201, 161, 90, .08);
+}
+.bsi-login__perk-ico svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: var(--bl-gold);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.bsi-login__brand-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--bl-grey-2);
+}
+.bsi-login__brand-foot a {
+  color: var(--bl-cream);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(253, 243, 234, .3);
+  padding-bottom: 1px;
+}
+.bsi-login__brand-foot a:hover { border-bottom-color: var(--bl-gold); color: #fff; }
+
+/* ── form panel ──────────────────────────────────────────────────────── */
+
+.bsi-login__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  padding: 26px 56px 30px;
+  background:
+    radial-gradient(900px 480px at 100% 0%, rgba(232, 40, 63, .06), transparent 60%),
+    radial-gradient(700px 420px at 0% 100%, rgba(201, 161, 90, .10), transparent 60%),
+    var(--bl-paper);
+}
+.bsi-login__topbar {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+.bsi-login__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--bl-line);
+  background: rgba(255, 255, 255, .6);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bl-ink);
+  text-decoration: none;
+  transition: border-color .2s, color .2s, background .2s;
+}
+.bsi-login__back:hover { border-color: var(--bl-red); color: var(--bl-red); background: #fff; }
+.bsi-login__back svg {
+  width: 16px; height: 16px;
+  fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.bsi-login__card {
+  position: relative;
+  width: 100%;
+  max-width: 452px;
+  margin: auto 0;
+  padding: 40px 40px 34px;
+  background: #fff;
+  border: 1px solid var(--bl-line-soft);
+  border-radius: 22px;
+  box-shadow: 0 34px 80px -44px rgba(22, 18, 19, .5), 0 2px 6px rgba(22, 18, 19, .04);
+  overflow: hidden;
+}
+.bsi-login__card::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--bl-red), var(--bl-gold));
+}
+.bsi-login__eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--bl-red);
+}
+.bsi-login__title {
+  margin: 8px 0 8px;
+  font-family: var(--bl-serif);
+  font-weight: 600;
+  font-size: 34px;
+  line-height: 1.1;
+  color: var(--bl-ink);
+}
+.bsi-login__sub {
+  margin: 0 0 26px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--bl-grey);
+}
+.bsi-login__legal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 22px;
+  font-size: 12.5px;
+  color: var(--bl-grey-2);
+}
+.bsi-login__legal a { color: var(--bl-grey); text-decoration: none; }
+.bsi-login__legal a:hover { color: var(--bl-red); }
+
+/* ── standard form markup, restyled ──────────────────────────────────── */
+
+.bsi-login__body form,
+.bsi-login__body .oe_login_form,
+.bsi-login__body .oe_signup_form,
+.bsi-login__body .oe_reset_password_form {
+  max-width: none;
+  margin: 0;
+}
+.bsi-login__body .mb-3 { margin-bottom: 18px !important; }
+.bsi-login__body .o_caps_lock_warning { margin-bottom: 4px; }
+
+.bsi-login .form-label,
+.bsi-login .col-form-label,
+.bsi-login label.fw-bold {
+  display: block;
+  padding: 0;
+  margin: 0 0 7px;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: .2px;
+  color: var(--bl-ink);
+}
+.bsi-login .form-label.d-flex { display: flex; }
+/* the password-policy meter floats right on the label's own line */
+.bsi-login .field-password > .form-label { display: inline-block; }
+.bsi-login .d-flex.justify-content-between.align-items-start { align-items: baseline !important; }
+
+.bsi-login .form-control {
+  height: 50px;
+  padding: 0 16px;
+  font-family: var(--bl-sans);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--bl-ink);
+  background: #fff;
+  border: 1.5px solid var(--bl-line);
+  border-radius: var(--bl-radius);
+  box-shadow: none;
+  transition: border-color .18s, box-shadow .18s;
+}
+.bsi-login .form-control::placeholder { color: #b3a8ab; font-weight: 500; }
+.bsi-login .form-control:hover { border-color: rgba(22, 18, 19, .28); }
+.bsi-login .form-control:focus {
+  outline: 0;
+  border-color: var(--bl-red);
+  box-shadow: 0 0 0 4px rgba(232, 40, 63, .12);
+}
+.bsi-login .form-control[readonly] { background: #f6f1ee; color: var(--bl-grey); }
+.bsi-login .form-control.is-invalid,
+.bsi-login .was-validated .form-control:invalid {
+  border-color: var(--bl-red);
+  background-image: none;
+  padding-right: 16px;
+}
+
+/* password + eye button read as one field */
+.bsi-login .input-group {
+  flex-wrap: nowrap;
+  border-radius: var(--bl-radius);
+  transition: box-shadow .18s;
+}
+.bsi-login .input-group > .form-control {
+  border-right: 0;
+  border-radius: var(--bl-radius) 0 0 var(--bl-radius);
+}
+.bsi-login .input-group > .form-control:focus { box-shadow: none; }
+.bsi-login .input-group > .o_show_password {
+  width: 50px;
+  height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: var(--bl-grey);
+  background: #fff;
+  border: 1.5px solid var(--bl-line) !important;
+  border-left: 0 !important;
+  border-radius: 0 var(--bl-radius) var(--bl-radius) 0 !important;
+  transition: color .18s, border-color .18s;
+}
+.bsi-login .input-group > .o_show_password:hover { color: var(--bl-ink); }
+.bsi-login .input-group:hover > .form-control,
+.bsi-login .input-group:hover > .o_show_password { border-color: rgba(22, 18, 19, .28) !important; }
+.bsi-login .input-group:focus-within { box-shadow: 0 0 0 4px rgba(232, 40, 63, .12); }
+.bsi-login .input-group:focus-within > .form-control,
+.bsi-login .input-group:focus-within > .o_show_password { border-color: var(--bl-red) !important; }
+.bsi-login .input-group:has(.is-invalid) > .o_show_password { border-color: var(--bl-red) !important; }
+
+.bsi-login .o_caps_lock_warning_text {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bl-red-dark) !important;
+}
+
+.bsi-login__forgot,
+.bsi-login .o_user_switch_btn {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--bl-red) !important;
+  text-decoration: none;
+}
+.bsi-login__forgot:hover,
+.bsi-login .o_user_switch_btn:hover { text-decoration: underline; }
+
+.bsi-login__hint {
+  margin-top: 7px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--bl-grey);
+}
+.bsi-login__mismatch { color: var(--bl-red-dark); font-weight: 700; }
+.bsi-login__mismatch[hidden] { display: none; }
+
+/* password-policy meter (auth_password_policy_signup) */
+.bsi-login owl-component[name="password_meter"] .o_password_meter_container { margin-top: 3px; }
+.bsi-login meter { accent-color: var(--bl-red); }
+
+/* buttons */
+.bsi-login .oe_login_buttons { padding-top: 10px !important; gap: 0; }
+.bsi-login .btn-primary {
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--bl-sans);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .3px;
+  color: #fff;
+  background: var(--bl-red);
+  border: 0;
+  border-radius: var(--bl-radius);
+  box-shadow: 0 12px 26px -12px rgba(232, 40, 63, .7);
+  transition: background .2s, box-shadow .2s, transform .2s;
+}
+.bsi-login .btn-primary:hover {
+  background: var(--bl-red-hover);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px -12px rgba(232, 40, 63, .75);
+}
+.bsi-login .btn-primary:active { transform: translateY(0); }
+.bsi-login .btn-primary:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 4px rgba(201, 161, 90, .55);
+}
+.bsi-login .btn-link {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bl-grey);
+  text-decoration: none;
+}
+.bsi-login .btn-link:hover { color: var(--bl-red); }
+
+.bsi-login__switch {
+  margin: 20px 0 0;
+  padding-top: 18px;
+  border-top: 1px dashed var(--bl-line);
+  text-align: center;
+  font-size: 14px;
+  color: var(--bl-grey);
+}
+.bsi-login__switch a,
+.bsi-login__backlink {
+  font-weight: 800;
+  color: var(--bl-red);
+  text-decoration: none;
+}
+.bsi-login__switch a:hover,
+.bsi-login__backlink:hover { text-decoration: underline; color: var(--bl-red); }
+.bsi-login__backlink { font-size: 13.5px; }
+.bsi-login__terms {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--bl-grey);
+}
+.bsi-login__terms a { color: var(--bl-ink); font-weight: 700; }
+.bsi-login__terms a:hover { color: var(--bl-red); }
+.bsi-login__done-btn { width: 100%; margin-top: 6px; float: none !important; }
+
+/* alerts: error / success states */
+.bsi-login .alert {
+  position: relative;
+  margin: 16px 0 4px;
+  padding: 12px 14px 12px 44px;
+  border: 0;
+  border-radius: var(--bl-radius);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.bsi-login .alert::before {
+  position: absolute;
+  left: 14px;
+  top: 12px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: center;
+  color: #fff;
+}
+.bsi-login .alert-danger {
+  color: var(--bl-red-dark);
+  background: rgba(232, 40, 63, .08);
+  box-shadow: inset 3px 0 0 var(--bl-red);
+}
+.bsi-login .alert-danger::before { content: '!'; background: var(--bl-red); }
+.bsi-login .alert-success {
+  color: #1f5e3d;
+  background: rgba(61, 220, 132, .12);
+  box-shadow: inset 3px 0 0 #2fb86c;
+}
+.bsi-login .alert-success::before { content: '\2713'; background: #2fb86c; }
+
+/* alternative sign-in options (passkey, OAuth) */
+.bsi-login .o_login_auth em {
+  position: relative;
+  display: block !important;
+  height: 1px;
+  margin: 26px 0 18px !important;
+  font-size: 0 !important;
+  background: var(--bl-line);
+}
+.bsi-login .o_login_auth em::after {
+  content: 'or';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 0 12px;
+  background: #fff;
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--bl-grey-2);
+}
+.bsi-login .o_login_auth .list-group { gap: 8px; }
+.bsi-login .o_login_auth .list-group-item,
+.bsi-login .o_user_switch .list-group-item {
+  min-height: 48px;
+  border: 1.5px solid var(--bl-line) !important;
+  border-radius: var(--bl-radius) !important;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--bl-ink);
+  background: #fff;
+  transition: border-color .18s, color .18s;
+}
+.bsi-login .o_login_auth .list-group-item:hover,
+.bsi-login .o_user_switch .list-group-item:hover { border-color: var(--bl-ink) !important; }
+.bsi-login .o_user_switch .list-group { gap: 8px; }
+.bsi-login .o_user_switch > p { font-weight: 700; margin-bottom: 0; }
+
+/* ── tablet / phone: the brand panel folds into a header ─────────────── */
+
+@media (max-width: 991.98px) {
+  .bsi-login {
+    display: block;
+    min-height: 0;
+  }
+  .bsi-login__brand {
+    position: relative;
+    height: auto;
+    min-height: 0;
+    gap: 18px;
+    padding: 22px 24px 58px;
+  }
+  .bsi-login__word { font-size: 32px; }
+  .bsi-login__pitch .bsi-login__kicker { margin-bottom: 8px; font-size: 10px; letter-spacing: 2px; }
+  .bsi-login__headline { margin: 0; font-size: 30px; }
+  .bsi-login__headline br { display: none; }
+  .bsi-login__perks,
+  .bsi-login__brand-foot { display: none; }
+  .bsi-login__scissors { width: 230px; height: 230px; right: -50px; bottom: -40px; opacity: .1; }
+  .bsi-login__glow--red { width: 280px; height: 280px; top: -120px; right: -90px; }
+  .bsi-login__glow--gold { display: none; }
+
+  .bsi-login__panel {
+    padding: 0 24px 30px;
+    background: var(--bl-paper);
+  }
+  .bsi-login__topbar { display: none; }
+  .bsi-login__card {
+    margin: -34px 0 0;
+    max-width: 520px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .bsi-login__brand { padding: 20px 16px 54px; }
+  .bsi-login__word { font-size: 30px; }
+  .bsi-login__headline { font-size: 26px; }
+  .bsi-login__panel { padding: 0 16px 26px; }
+  .bsi-login__card {
+    padding: 28px 20px 24px;
+    border-radius: 18px;
+  }
+  .bsi-login__title { font-size: 28px; }
+  .bsi-login__sub { margin-bottom: 22px; font-size: 13.5px; }
+  /* 16px stops iOS Safari zooming into the field on focus */
+  .bsi-login .form-control { font-size: 16px; }
+  .bsi-login__legal { margin-top: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bsi-login *,
+  .bsi-login *::before,
+  .bsi-login *::after { transition: none !important; }
+}

@@ -23,7 +23,6 @@ import logging
 _logger = logging.getLogger(__name__)
 
 # -- render state ------------------------------------------------------------
-
 _DATA_ANCHOR = 'homeDiff: ['
 
 # Wraps the design's own literal (kept verbatim as the fallback) -- same
